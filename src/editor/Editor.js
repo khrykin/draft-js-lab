@@ -22,7 +22,7 @@ import {
   getSelectedBlocksType,
   getSelectionInlineStyle,
   handleNewLine,
-  insertNewUnstyledBlock
+  insertNewUnstyledBlock,
 } from 'draftjs-utils';
 
 import 'draft-js/dist/Draft.css'
@@ -53,7 +53,6 @@ const raw = {
       "mutability": "MUTABLE",
       "data": {
         "href": "http://www.facebook.com",
-        "url": "http://www.facebook.com/"
       }
     }
   },
@@ -437,14 +436,18 @@ function getToolbarStyle(selectionRect, toolbar) {
 const sampleMarkup =
   '<h1>Header</h1>' +
   '<h3>Header</h3>' +
-  '<figure><img src="photo.jpg" /></figure>' +
+  '<figure><img src="image.jpg" /></figure>' +
   '<b>Bold text</b>, <i>Italic text</i><br/ ><br />' +
-  '<a href="http://www.facebook.com">Example link</a>';
+  '<a href="http://www.ski-o.ru" target="__blank">Example link</a>';
 
 const TOOLBAR_BOTTOM_MARGIN = 15;
 const TOOLBAR_SIDE_MARGIN = 15;
 
-const intialState = convertFromRaw(raw);
+const blocksFromHTML = convertFromHTML(sampleMarkup);
+
+const intialState = ContentState.createFromBlockArray(blocksFromHTML);
+
+//convertFromRaw(raw);
 
 class RichEditor extends Component {
 
@@ -512,15 +515,6 @@ class RichEditor extends Component {
       });
     }
 
-    // if (
-    //   selectionRect.top !== prevState.selectionRect.top ||
-    //   selectionRect.left !== prevState.selectionRect.left ||
-    //   selectionRect.width !== prevState.selectionRect.width &&
-    //   this.state.currentEntity.getType() !== 'PHOTO'
-    // ) {
-    //
-    // }
-
     if (
       selectionIsCollapsed &&
       (
@@ -560,6 +554,10 @@ class RichEditor extends Component {
     });
   }
 
+  onTab = e => {
+    const maxDepth = 4;
+    this.onChange(RichUtils.onTab(e, this.state.editorState, maxDepth));
+  }
 
   blockRenderer = (contentBlock) => {
     const type = contentBlock.getType();
@@ -636,10 +634,8 @@ class RichEditor extends Component {
   }
 
   handleKeyCommand = command => {
-    const newState = RichUtils.handleKeyCommand(
-      this.state.editorState
-      , command
-    );
+    const { editorState } = this.state;
+    const newState = RichUtils.handleKeyCommand(editorState, command);
 
     if (newState) {
       this.onChange(newState);
@@ -716,12 +712,17 @@ class RichEditor extends Component {
         'IMMUTABLE',
         data
       );
+
+      const stateWithAtomicBlock =  AtomicBlockUtils.insertAtomicBlock(
+        editorState,
+        key,
+        ' '
+      );
+
+      console.log('getSelectedBlocksType', getSelectedBlocksType(stateWithAtomicBlock))
+
       this.onChange(
-        AtomicBlockUtils.insertAtomicBlock(
-          editorState,
-          key,
-          ' '
-        )
+        stateWithAtomicBlock
       );
     }
   }
@@ -834,6 +835,7 @@ class RichEditor extends Component {
             handleKeyCommand={this.handleKeyCommand}
             blockRendererFn={this.blockRenderer}
             readOnly={this.state.readOnly}
+            onTab={this.onTab}
             onChange={this.onChange} />
         </div>
         <AddButton
