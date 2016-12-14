@@ -6,15 +6,19 @@ import {
   RichUtils,
   Entity,
   Modifier,
+  CharacterMetadata,
+  ContentBlock,
+  BlockMapBuilder,
   CompositeDecorator,
   getVisibleSelectionRect,
   DefaultDraftBlockRenderMap,
   convertToRaw,
   DraftEditorBlock,
   AtomicBlockUtils,
-  convertFromHTML,
   convertFromRaw
 } from 'draft-js';
+
+import { convertToHTML, convertFromHTML } from './serializer';
 
 import {
   getSelectionEntity,
@@ -29,155 +33,7 @@ import 'draft-js/dist/Draft.css'
 
 import Instagram from 'react-instagram-embed';
 
-import { Map } from 'immutable';
-
-const raw = {
-  "entityMap": {
-    "0": {
-      "type": "YOUTUBE",
-      "mutability": "IMMUTABLE",
-      "data": {
-        "src": "https://www.youtube.com/embed/dQw4w9WgXcQ"
-      }
-    },
-    "1": {
-      "type": "PHOTO",
-      "mutability": "IMMUTABLE",
-      "data": {
-        "caption": "Подпись",
-        "src": "image2.jpg"
-      }
-    },
-    "2": {
-      "type": "LINK",
-      "mutability": "MUTABLE",
-      "data": {
-        "href": "http://www.facebook.com",
-      }
-    }
-  },
-  "blocks": [
-    {
-      "key": "b569s",
-      "text": "Header",
-      "type": "header-one",
-      "depth": 0,
-      "inlineStyleRanges": [],
-      "entityRanges": [],
-      "data": {}
-    },
-    {
-      "key": "apatd",
-      "text": "Header",
-      "type": "header-three",
-      "depth": 0,
-      "inlineStyleRanges": [],
-      "entityRanges": [],
-      "data": {}
-    },
-    {
-      "key": "c29j",
-      "text": "Bold text, Italic text",
-      "type": "unstyled",
-      "depth": 0,
-      "inlineStyleRanges": [
-        {
-          "offset": 0,
-          "length": 9,
-          "style": "BOLD"
-        },
-        {
-          "offset": 11,
-          "length": 11,
-          "style": "ITALIC"
-        }
-      ],
-      "entityRanges": [],
-      "data": {}
-    },
-    {
-      "key": "dgqqg",
-      "text": "",
-      "type": "unstyled",
-      "depth": 0,
-      "inlineStyleRanges": [],
-      "entityRanges": [],
-      "data": {}
-    },
-    {
-      "key": "6upbo",
-      "text": " ",
-      "type": "atomic",
-      "depth": 0,
-      "inlineStyleRanges": [],
-      "entityRanges": [
-        {
-          "offset": 0,
-          "length": 1,
-          "key": 0
-        }
-      ],
-      "data": {}
-    },
-    {
-      "key": "ed0ke",
-      "text": "",
-      "type": "unstyled",
-      "depth": 0,
-      "inlineStyleRanges": [],
-      "entityRanges": [],
-      "data": {}
-    },
-    {
-      "key": "25m85",
-      "text": "",
-      "type": "unstyled",
-      "depth": 0,
-      "inlineStyleRanges": [],
-      "entityRanges": [],
-      "data": {}
-    },
-    {
-      "key": "7dvcl",
-      "text": " ",
-      "type": "atomic",
-      "depth": 0,
-      "inlineStyleRanges": [],
-      "entityRanges": [
-        {
-          "offset": 0,
-          "length": 1,
-          "key": 1
-        }
-      ],
-      "data": {}
-    },
-    {
-      "key": "lpll",
-      "text": "",
-      "type": "unstyled",
-      "depth": 0,
-      "inlineStyleRanges": [],
-      "entityRanges": [],
-      "data": {}
-    },
-    {
-      "key": "bdbp8",
-      "text": "Example link",
-      "type": "unstyled",
-      "depth": 0,
-      "inlineStyleRanges": [],
-      "entityRanges": [
-        {
-          "offset": 0,
-          "length": 12,
-          "key": 2
-        }
-      ],
-      "data": {}
-    }
-  ]
-};
+import { Map, List, Repeat } from 'immutable';
 
 function Media(props) {
   const key = props.block.getEntityAt(0);
@@ -193,8 +49,6 @@ function Media(props) {
     return (
       <iframe
         src={data.src}
-        width="560"
-        height="315"
         frameBorder="0"
         allowFullScreen />
     );
@@ -218,6 +72,11 @@ class MediaBlock extends Component {
     this.state = data;
   }
 
+  handleKeyPress = e => {
+    if (e.key === 'Enter') {
+      this.save();
+    }
+  }
 
   setInputField = name => e => {
     const { value } = e.target;
@@ -228,11 +87,40 @@ class MediaBlock extends Component {
     this.setState({ [name]: value });
   }
 
-  toggleEdit = e => {
+  delete = e => {
     e.preventDefault();
     const { editor } = this.props.blockProps;
-    this.setState({ edit: !this.state.edit }, () => {
-      editor.setState({ readOnly: !editor.state.readOnly });
+    editor.setState({ readOnly: false }, () => {
+      const { editorState } = editor.state;
+
+      const newContentState = Modifier.removeRange(
+        editorState.getCurrentContent(),
+        editorState.getSelection(),
+        'backward'
+      )
+
+      const newEditorState = EditorState.push(
+        editorState,
+        newContentState,
+        'backspace-character'
+      );
+
+      editor.onChange(newEditorState);
+    });
+  }
+
+  edit = e => {
+    e.preventDefault();
+    const { editor } = this.props.blockProps;
+    this.setState({ edit: true }, () => {
+      editor.setState({ readOnly: true });
+    });
+  }
+
+  save = () => {
+    const { editor } = this.props.blockProps;
+    this.setState({ edit: false }, () => {
+      editor.setState({ readOnly: false });
     });
     const key = this.props.block.getEntityAt(0);
     const { caption, src, content } = this.state;
@@ -272,30 +160,33 @@ class MediaBlock extends Component {
     }
 
     return (
-      <div className="">
+      <div className="relative">
+        <a href="" className="absolute right--1 top--1" onClick={this.delete}>
+          x
+        </a>
         <Media {...this.props} />
-        <div className="tr f5 serif pv2 gray i">
+        <figcaption>
           { this.state.edit ? (
             <span>
               <input
                 type="text"
                 defaultValue={this.state.src}
+                onKeyPress={this.handleKeyPress}
                 onChange={this.setInputField('src')}
                 />
               <input
                 type="text"
                 defaultValue={this.state.caption}
+                onKeyPress={this.handleKeyPress}
                 onChange={this.setInputField('caption')}
                 />
-              <a href="" onClick={this.toggleEdit}>Done</a>
             </span>
           ) : (
-            <span>
-              { this.state.caption }{' '}
-              <a href="" onClick={this.toggleEdit}>Edit</a>
+            <span onClick={this.edit}>
+              { this.state.caption || 'Подпись...'}
             </span>
           ) }
-        </div>
+        </figcaption>
       </div>
     );
   }
@@ -322,23 +213,8 @@ class HTMLEditor extends Component {
   }
 }
 
-// const blockRenderMap = Map({
-//   photo: {
-//     element: 'custom-block',
-//     wrapper: <Photo />
-//   }
-// });
-//
-// // Include 'paragraph' as a valid block and updated the unstyled element but
-// // keep support for other draft default block types
-// const extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(blockRenderMap);
-
-
-
-
 
 function HashTag(props) {
-  // console.log(props);
   const url = '/tags/' + props.decoratedText.replace(/^\#/, '');
   return (
     <a href={url}>
@@ -436,16 +312,28 @@ function getToolbarStyle(selectionRect, toolbar) {
 const sampleMarkup =
   '<h1>Header</h1>' +
   '<h3>Header</h3>' +
-  '<figure><img src="image.jpg" /></figure>' +
   '<b>Bold text</b>, <i>Italic text</i><br/ ><br />' +
-  '<a href="http://www.ski-o.ru" target="__blank">Example link</a>';
+  '<a href="http://www.ski-o.ru" target="__blank">Example link</a>' +
+  '<figure><img src="image.jpg" /><figcaption>Caption</figcaption></figure>' +
+  '<p></p>' +
+  '<figure><img src="image2.jpg" /><figcaption>Caption 2</figcaption></figure>' +
+  '<p></p>' +
+  '<figure><iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe><figcaption>Caption 3</figcaption></figure>' +
+  '<p></p>';
 
 const TOOLBAR_BOTTOM_MARGIN = 15;
 const TOOLBAR_SIDE_MARGIN = 15;
 
-const blocksFromHTML = convertFromHTML(sampleMarkup);
+const intialState = convertFromHTML(sampleMarkup);
 
-const intialState = ContentState.createFromBlockArray(blocksFromHTML);
+const blockRenderMap = Map({
+  'unstyled': {
+    element: 'p'
+  }
+});
+
+const extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(blockRenderMap);
+
 
 //convertFromRaw(raw);
 
@@ -544,7 +432,8 @@ class RichEditor extends Component {
       currentEntityKey
     }, () => {
       this.props.onChange(
-        convertToRaw(this.state.editorState.getCurrentContent())
+        // convertToRaw(this.state.editorState.getCurrentContent())
+        convertToHTML(this.state.editorState)
       );
       if (this.state.linkEditorStyle.visibility !== 'visible') {
         // setTimeout(() => this.editor.focus(), 0);
@@ -569,6 +458,12 @@ class RichEditor extends Component {
           editor: this,
         },
       };
+    }
+
+    if (type === 'unstyled') {
+      return {
+
+      }
     }
   }
 
@@ -719,8 +614,6 @@ class RichEditor extends Component {
         ' '
       );
 
-      console.log('getSelectedBlocksType', getSelectedBlocksType(stateWithAtomicBlock))
-
       this.onChange(
         stateWithAtomicBlock
       );
@@ -826,7 +719,7 @@ class RichEditor extends Component {
 
         <div
           ref={n => this.editorWrapper = n}
-          className="pa3">
+          className="">
           <Editor
             ref={n => { window.editor = n; this.editor = n }}
             placeholder="Tell a story"
@@ -834,6 +727,7 @@ class RichEditor extends Component {
             editorState={this.state.editorState}
             handleKeyCommand={this.handleKeyCommand}
             blockRendererFn={this.blockRenderer}
+            blockRenderMap={extendedBlockRenderMap}
             readOnly={this.state.readOnly}
             onTab={this.onTab}
             onChange={this.onChange} />
