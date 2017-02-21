@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Map, List, Repeat } from 'immutable';
 import {
   Editor,
   EditorState,
@@ -19,7 +20,9 @@ import {
   convertFromRaw
 } from 'draft-js';
 
-import { convertToHTML, convertFromHTML } from './serializer';
+import 'draft-js/dist/Draft.css'
+
+/* State manipulation imports */
 
 import {
   getSelectionEntity,
@@ -30,304 +33,41 @@ import {
   insertNewUnstyledBlock,
 } from 'draftjs-utils';
 
-import 'draft-js/dist/Draft.css'
+import {
+  removeBlock
+} from './utils';
+
+
+/* Serialization imports */
+
+import { convertToHTML, convertFromHTML } from './serializer';
+import {
+  findURLs,
+  findHashTags,
+  findEntities
+} from './strategies';
+
+import sampleMarkup from "./sampleMarkup";
+
+
+/* Components imports */
 
 import Instagram from 'react-instagram-embed';
+import Media from './Media';
+import MediaBlockEditor from './MediaBlockEditor';
+import HTMLEditor from './HTMLEditor';
+import LinkEditor from './LinkEditor';
+import AddButton from './AddButton';
+import Button from './Button';
 
-import { Map, List, Repeat } from 'immutable';
-
-function Media(props) {
-  const key = props.block.getEntityAt(0);
-  const entity = Entity.get(key);
-  const data = entity.getData();
-  const type = entity.getType();
-
-  if (type === 'PHOTO')
-    return (
-      <img src={data.src} />
-    );
-  if (type === 'YOUTUBE')
-    return (
-      <iframe
-        src={data.src}
-        frameBorder="0"
-        allowFullScreen />
-    );
-  if (type === 'INSTAGRAM') {
-    return (
-      <Instagram
-        url={data.src}
-      />
-    )
-  }
-}
+import {
+  HashTag,
+  Link,
+  URLLink,
+  Image,
+} from './EntitiesWrappers';
 
 
-function removeBlock(editorState, blockKey) {
- // const editorState = store.getEditorState();
- let content = editorState.getCurrentContent();
-
- const beforeKey = content.getKeyBefore(blockKey);
- const beforeBlock = content.getBlockForKey(beforeKey);
-
- // Note: if the focused block is the first block then it is reduced to an
- // unstyled block with no character
- if (beforeBlock === undefined) {
-   const targetRange = new SelectionState({
-     anchorKey: blockKey,
-     anchorOffset: 0,
-     focusKey: blockKey,
-     focusOffset: 1,
-   });
-   // change the blocktype and remove the characterList entry with the sticker
-   content = Modifier.removeRange(content, targetRange, 'backward');
-   content = Modifier.setBlockType(
-     content,
-     targetRange,
-     'unstyled'
-   );
-   const newState = EditorState.push(editorState, content, 'remove-block');
-
-   // force to new selection
-   const newSelection = new SelectionState({
-     anchorKey: blockKey,
-     anchorOffset: 0,
-     focusKey: blockKey,
-     focusOffset: 0,
-   });
-   return EditorState.forceSelection(newState, newSelection);
- }
-
- const targetRange = new SelectionState({
-   anchorKey: beforeKey,
-   anchorOffset: beforeBlock.getLength(),
-   focusKey: blockKey,
-   focusOffset: 1,
- });
-
- content = Modifier.removeRange(content, targetRange, 'backward');
- const newState = EditorState.push(editorState, content, 'remove-block');
-
- // force to new selection
- const newSelection = new SelectionState({
-   anchorKey: beforeKey,
-   anchorOffset: beforeBlock.getLength(),
-   focusKey: beforeKey,
-   focusOffset: beforeBlock.getLength(),
- });
- return EditorState.forceSelection(newState, newSelection);
-}
-
-class MediaBlock extends Component {
-
-  constructor(props) {
-    super(props);
-    const key = props.block.getEntityAt(0);
-    const entity = Entity.get(key);
-    const data = entity.getData();
-
-    this.state = data;
-  }
-
-  handleKeyPress = e => {
-    if (e.key === 'Enter') {
-      this.save();
-    }
-  }
-
-  setInputField = name => e => {
-    const { value } = e.target;
-    this.setState({ [name]: value });
-  }
-
-  setField = name => value => {
-    this.setState({ [name]: value });
-  }
-
-  delete = e => {
-    e.preventDefault();
-    const { editor } = this.props.blockProps;
-    editor.setState({ readOnly: false }, () => {
-
-      const newEditorState = removeBlock(editor.state.editorState, this.props.block.key);
-
-      editor.onChange(newEditorState);
-    });
-  }
-
-  edit = e => {
-    e.preventDefault();
-    const { editor } = this.props.blockProps;
-    this.setState({ edit: true }, () => {
-      editor.setState({ readOnly: true });
-    });
-  }
-
-  save = () => {
-    const { editor } = this.props.blockProps;
-    this.setState({ edit: false }, () => {
-      editor.setState({ readOnly: false });
-    });
-    const key = this.props.block.getEntityAt(0);
-    const { caption, src, content } = this.state;
-    editor.replaceEntityData(key, {
-      caption,
-      src,
-      content
-    });
-  }
-
-  render() {
-    const key = this.props.block.getEntityAt(0);
-    const entity = Entity.get(key);
-    const data = entity.getData();
-    const type = entity.getType();
-
-    if (type === 'HTML') {
-      return (
-        <div>
-          { this.state.edit ? (
-            <span>
-              <HTMLEditor
-                value={this.state.content}
-                onChange={this.setField('content')}
-                />
-              <a href="" onClick={this.toggleEdit}>Done</a>
-            </span>
-          ) : (
-            <span>
-              <div dangerouslySetInnerHTML={{__html: this.state.content }} />
-              <a href="" onClick={this.toggleEdit}>Edit</a>
-            </span>
-          ) }
-        </div>
-
-      )
-    }
-
-    return (
-      <div className="relative">
-        <a href="" className="absolute right--1 top--1" onClick={this.delete}>
-          x
-        </a>
-        <Media {...this.props} />
-        <figcaption>
-          { this.state.edit ? (
-            <span>
-              <input
-                type="text"
-                defaultValue={this.state.src}
-                onKeyPress={this.handleKeyPress}
-                onChange={this.setInputField('src')}
-                />
-              <input
-                type="text"
-                defaultValue={this.state.caption}
-                onKeyPress={this.handleKeyPress}
-                onChange={this.setInputField('caption')}
-                />
-            </span>
-          ) : (
-            <span onClick={this.edit}>
-              { this.state.caption || 'Подпись...'}
-            </span>
-          ) }
-        </figcaption>
-      </div>
-    );
-  }
-}
-
-
-class HTMLEditor extends Component {
-
-  static defaultProps = {
-    onChange() {}
-  }
-
-  change = e => {
-    const { value } = e.target;
-    this.props.onChange(value);
-  }
-
-  render() {
-    return (
-        <textarea
-          value={this.props.value}
-          onChange={this.change} />
-    );
-  }
-}
-
-
-function HashTag(props) {
-  const url = '/tags/' + props.decoratedText.replace(/^\#/, '');
-  return (
-    <a href={url}>
-      { props.children }
-    </a>
-  );
-};
-
-
-function Link(props) {
-  const entity = Entity.get(props.entityKey);
-  const { href, target } = entity.getData();
-  return (
-    <a href={href} target={target}>
-      { props.children }
-    </a>
-  );
-};
-
-function URLLink(props) {
-  return (
-    <a href={props.decoratedText}>
-      { props.children }
-    </a>
-  );
-}
-
-function Image(props) {
-  const entity = Entity.get(props.entityKey);
-  const { src } = entity.getData();
-  return <img src={src} />
-}
-
-
-function findEntities(type) {
-  return (contentBlock, callback) => {
-    contentBlock.findEntityRanges(character => {
-        const entityKey = character.getEntity();
-        return (
-          entityKey !== null &&
-          Entity.get(entityKey).getType() === type
-        );
-      },
-      callback
-    );
-  }
-}
-
-const URL_REGEX = /(https?:\/\/(www\.)?)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g;
-const HASHTAG_REGEX = /\#[A-Za-zА-Яа-я0-9]+/g;
-
-function findURLs(contentBlock, callback) {
-  findWithRegex(URL_REGEX, contentBlock, callback);
-}
-
-function findHashTags(contentBlock, callback) {
-  findWithRegex(HASHTAG_REGEX, contentBlock, callback);
-}
-
-function findWithRegex(regex, contentBlock, callback) {
-  const text = contentBlock.getText();
-  let matchArr, start;
-  while ((matchArr = regex.exec(text)) !== null) {
-    start = matchArr.index;
-    callback(start, start + matchArr[0].length);
-  }
-}
 
 function getToolbarStyle(selectionRect, toolbar) {
   // console.log(selectionRect, toolbar);
@@ -355,23 +95,6 @@ function getToolbarStyle(selectionRect, toolbar) {
   }
 }
 
-const sampleMarkup =
-  '<h1>Header</h1>' +
-  '<h3>Header</h3>' +
-  '<p>' +
-  '<b>Bold text</b>, <i>Italic text</i><br/ >' +
-  '<a href="http://www.ski-o.ru" target="__blank">Example link</a>' +
-  '</p>' +
-  '<ul>' +
-    '<li>To do 1</li>' +
-    '<li>To do 2</li>' +
-  '</ul>' +
-  '<pre>name  result</pre>' +
-  '<figure><img src="image.jpg" /><figcaption>Caption</figcaption></figure>' +
-  '<figure><img src="image2.jpg" /><figcaption>Caption 2</figcaption></figure>' +
-  '<figure><iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe><figcaption>Caption 3</figcaption></figure>' +
-  '<figure><iframe class="instagram-media instagram-media-rendered" id="instagram-embed-0" src="https://www.instagram.com/p/BMWm4GPjxEV" height="460" data-instgrm="true" data-instgrm-payload-id="instagram-media-payload-0" scrolling="no" style="background:rgb(255, 255, 255);border:0px;margin:1px;max-width:658px;width:calc(100% - 2px);border-radius:4px;box-shadow:rgba(0, 0, 0, 0.498039) 0px 0px 1px 0px, rgba(0, 0, 0, 0.14902) 0px 1px 10px 0px;display:block;padding:0px;"></iframe><figcaption>Caption 4</figcaption><</figure>'
-  ;
 
 const TOOLBAR_BOTTOM_MARGIN = 15;
 const TOOLBAR_SIDE_MARGIN = 15;
@@ -504,7 +227,7 @@ class RichEditor extends Component {
     const type = contentBlock.getType();
     if (type === 'atomic') {
       return {
-        component: MediaBlock,
+        component: MediaBlockEditor,
         editable: false,
         props: {
           editor: this,
@@ -807,170 +530,5 @@ class RichEditor extends Component {
   }
 }
 
-
-class AddButton extends Component {
-  state = {
-    show: false
-  };
-
-  toggleShow = e => {
-    this.setState({ show: !this.state.show });
-  }
-
-  delegate = (handler=() => {}) => e => {
-    e.preventDefault();
-    this.setState({ show: false });
-    handler();
-  }
-
-  render() {
-    const { show } = this.state;
-    return (
-      <div
-        style={this.props.style}
-        className="absolute z-index-3 tc w2"
-        >
-        <div
-          onClick={this.toggleShow}
-          ref={this.props.DOMNodeRef}
-          className="ml1 pointer dib bg-white silver tc flex flex-column justify-center items-center w2 h2 ba br-100 animate-bg hover-bg-silver hover-white">
-         <i className={`fa fa-${show ? 'minus' : 'plus'}`}/>
-        </div>
-        { show && (
-          <div className="gray mt1">
-            <div className="">
-              <Button
-                className=""
-                onClick={this.delegate(this.props.addPhoto)}>
-                <i className="fa fa-picture-o"/>
-              </Button>
-            </div>
-            <div>
-              <Button
-                className=""
-                onClick={this.delegate(this.props.addHTML)}>
-                <i className="fa fa-code"/>
-              </Button>
-            </div>
-            <div>
-              <Button
-                className=""
-                onClick={this.delegate(this.props.addYoutube)}>
-                <i className="fa fa-film"/>
-              </Button>
-            </div>
-            <div>
-              <Button
-                className=""
-                onClick={this.delegate(this.props.addInstagram)}>
-                <i className="fa fa-instagram"/>
-              </Button>
-            </div>
-            <div>
-              <Button
-                className=""
-                onClick={this.delegate(this.addAttachment)}>
-                <i className="fa fa-paperclip"/>
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-}
-
-class LinkEditor extends Component {
-  static defaultProps = {
-    href: '',
-    onChange: () => {},
-    onClose: () => {}
-  }
-
-  state = {
-    href: this.props.href || '',
-    blank: false,
-  }
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.href && nextProps.href !== this.state.href) {
-      this.setState({ href: nextProps.href });
-    }
-  }
-
-  setHref = e => {
-    const { value: href } = e.target;
-    this.setState({ href }, () => {
-      this.props.onChange({
-        href,
-        target: this.state.blank ? '__blank' : undefined
-      });
-    });
-  }
-
-  setBlank = e => {
-    const { checked: blank } = e.target;
-    this.setState({ blank }, () => {
-      this.props.onChange(this.state);
-    });
-  }
-
-  close = e => {
-    if (e.key === 'Enter') {
-     this.props.onClose();
-   }
-  }
-
-  render() {
-    return (
-      <div
-        ref={this.props.DOMNodeRef}
-        className="absolute pa1 dt bg-black white shadow-4 white br2 z-index-3"
-        style={this.props.style}>
-        <div className="dtc">
-          <input
-            className="input-reset f5 w5 h-100 br1 bw0 pa2 mr1 bg-near-white black "
-            tabIndex={0}
-            type="text"
-            ref={this.props.inputDOMNodeRef}
-            onKeyPress={this.close}
-            value={this.state.href}
-            onChange={this.setHref}
-            />
-          <div className="pa2 f6">
-            <input
-              type="checkbox"
-              checked={this.state.blank}
-              onChange={this.setBlank}
-              />
-            {' '}
-            В отдельном окне
-          </div>
-        </div>
-        <div className="dtc w2">
-        <Button
-          className=""
-          onClick={this.props.removeLink}>
-          <i className="fa fa-close"/>
-        </Button>
-        </div>
-      </div>
-    )
-  }
-}
-
-const Button = ({ onClick, children, className, active }) => (
-  <div
-    className={
-      `pointer dib pa1 br1 ph2 ma1 ` +
-      (active ?
-        `bg-white hover-bg-gray black` :
-        `bg-transparent hover-bg-gray hover-white`
-      ) +
-      `${className ? ' ' + className : ''}`
-    }
-    onClick={onClick}>
-    { children }
-  </div>
-);
 
 export default RichEditor;
