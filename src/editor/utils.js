@@ -62,3 +62,20 @@ export function removeBlock(editorState, blockKey) {
  });
  return EditorState.forceSelection(newState, newSelection);
 }
+
+
+export function collapseSelectionToTheEnd(editorState) {
+  const currentSelection = editorState.getSelection();
+  const currentKey = currentSelection.getEndKey();
+  const currentOffset = currentSelection.getEndOffset();
+
+  const emptySelectionState = SelectionState.createEmpty(currentKey);
+  const selectionState = emptySelectionState.merge({
+    anchorKey: currentKey,
+    focusKey: currentKey,
+    focusOffset: currentOffset,
+    anchorOffset: currentOffset
+  });
+  
+  return selectionState;
+}

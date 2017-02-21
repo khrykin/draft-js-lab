@@ -32,7 +32,13 @@ function toHTML(editorState) {
     },
     entityToHTML(entity, originalText) {
       if (entity.type === 'LINK') {
-        return <a href={entity.data.href}>{originalText}</a>;
+        return (
+          <a
+            href={entity.data.href}
+            target={entity.data.target}>
+            {originalText}
+          </a>
+        );  
       }
       const { caption, src } = entity.data;
       const captionHTML = caption && caption.length ? `<figcaption>${caption}</figcaption>` : '';
@@ -62,6 +68,8 @@ function toHTML(editorState) {
 }
 
 function fromHTML(html) {
+  /* Remove newlines and indentation */
+  html = html.replace(/\n\s*/g, '');
   return convertFromHTML({
     htmlToStyle(nodeName, node, currentStyle) {
       // if (nodeName === 'strong') {
@@ -75,7 +83,10 @@ function fromHTML(html) {
         return Entity.create(
           'LINK',
           'MUTABLE',
-          { href: node.href }
+          {
+            href: node.href,
+            target: node.target
+          }
         )
       }
 
@@ -131,8 +142,9 @@ function fromHTML(html) {
           type: 'atomic',
         };
       }
+
     }
-})(html);
+  })(html);
 }
 
 export { toHTML as convertToHTML };

@@ -34,7 +34,8 @@ import {
 } from 'draftjs-utils';
 
 import {
-  removeBlock
+  removeBlock,
+  collapseSelectionToTheEnd
 } from './utils';
 
 
@@ -210,6 +211,7 @@ class RichEditor extends Component {
         // convertToRaw(this.state.editorState.getCurrentContent())
         convertToHTML(this.state.editorState)
       );
+      console.log("EDITOR_STATE", JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())));
       if (this.state.linkEditorStyle.visibility !== 'visible') {
         // setTimeout(() => this.editor.focus(), 0);
       }
@@ -350,9 +352,14 @@ class RichEditor extends Component {
 
   addLink = () => {
     const { editorState } = this.state;
-    const key = Entity.create('LINK', 'MUTABLE', {
-      href: 'http://'
-    });
+    const contentState = editorState.getCurrentContent();
+
+    const contentStateWithEntity =
+      contentState.createEntity('LINK', 'MUTABLE', {
+        href: 'http://'
+      });
+
+    const key = contentStateWithEntity.getLastCreatedEntityKey();
 
     this.onChange(
       RichUtils.toggleLink(
@@ -413,10 +420,10 @@ class RichEditor extends Component {
   }
 
   closeLinkEditor = () => {
-    this.editor.focus();
-    this.setState({
-      currentEntity: null
-    });
+    const { editorState } = this.state;
+    const selectionState = collapseSelectionToTheEnd(editorState);
+
+    this.onChange(EditorState.forceSelection(editorState, selectionState));
   }
 
   toggleAddMenu = e => {

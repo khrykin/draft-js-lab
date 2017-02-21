@@ -11,8 +11,9 @@ export default class LinkEditor extends Component {
 
   state = {
     href: this.props.href || '',
-    blank: false,
+    blank: this.props.target === '__blank',
   }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.href && nextProps.href !== this.state.href) {
       this.setState({ href: nextProps.href });
@@ -32,7 +33,10 @@ export default class LinkEditor extends Component {
   setBlank = e => {
     const { checked: blank } = e.target;
     this.setState({ blank }, () => {
-      this.props.onChange(this.state);
+      this.props.onChange({
+        href: this.state.href,
+        target: this.state.blank ? '__blank' : undefined
+      });
     });
   }
 
