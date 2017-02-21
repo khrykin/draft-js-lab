@@ -7,7 +7,12 @@ body {
 .z-index-3 {
   z-index: 3;
 }
+div[data-block="true"] {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
 
 iframe {
-  width: 100%;
+  /*width: 100%;*/
+  /*min-height: 300px;*/
 }

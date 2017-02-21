@@ -9,6 +9,7 @@ import {
   CharacterMetadata,
   ContentBlock,
   BlockMapBuilder,
+  SelectionState,
   CompositeDecorator,
   getVisibleSelectionRect,
   DefaultDraftBlockRenderMap,
@@ -61,6 +62,62 @@ function Media(props) {
   }
 }
 
+
+function removeBlock(editorState, blockKey) {
+ // const editorState = store.getEditorState();
+ let content = editorState.getCurrentContent();
+
+ const beforeKey = content.getKeyBefore(blockKey);
+ const beforeBlock = content.getBlockForKey(beforeKey);
+
+ // Note: if the focused block is the first block then it is reduced to an
+ // unstyled block with no character
+ if (beforeBlock === undefined) {
+   const targetRange = new SelectionState({
+     anchorKey: blockKey,
+     anchorOffset: 0,
+     focusKey: blockKey,
+     focusOffset: 1,
+   });
+   // change the blocktype and remove the characterList entry with the sticker
+   content = Modifier.removeRange(content, targetRange, 'backward');
+   content = Modifier.setBlockType(
+     content,
+     targetRange,
+     'unstyled'
+   );
+   const newState = EditorState.push(editorState, content, 'remove-block');
+
+   // force to new selection
+   const newSelection = new SelectionState({
+     anchorKey: blockKey,
+     anchorOffset: 0,
+     focusKey: blockKey,
+     focusOffset: 0,
+   });
+   return EditorState.forceSelection(newState, newSelection);
+ }
+
+ const targetRange = new SelectionState({
+   anchorKey: beforeKey,
+   anchorOffset: beforeBlock.getLength(),
+   focusKey: blockKey,
+   focusOffset: 1,
+ });
+
+ content = Modifier.removeRange(content, targetRange, 'backward');
+ const newState = EditorState.push(editorState, content, 'remove-block');
+
+ // force to new selection
+ const newSelection = new SelectionState({
+   anchorKey: beforeKey,
+   anchorOffset: beforeBlock.getLength(),
+   focusKey: beforeKey,
+   focusOffset: beforeBlock.getLength(),
+ });
+ return EditorState.forceSelection(newState, newSelection);
+}
+
 class MediaBlock extends Component {
 
   constructor(props) {
@@ -91,19 +148,8 @@ class MediaBlock extends Component {
     e.preventDefault();
     const { editor } = this.props.blockProps;
     editor.setState({ readOnly: false }, () => {
-      const { editorState } = editor.state;
 
-      const newContentState = Modifier.removeRange(
-        editorState.getCurrentContent(),
-        editorState.getSelection(),
-        'backward'
-      )
-
-      const newEditorState = EditorState.push(
-        editorState,
-        newContentState,
-        'backspace-character'
-      );
+      const newEditorState = removeBlock(editor.state.editorState, this.props.block.key);
 
       editor.onChange(newEditorState);
     });
@@ -312,14 +358,20 @@ function getToolbarStyle(selectionRect, toolbar) {
 const sampleMarkup =
   '<h1>Header</h1>' +
   '<h3>Header</h3>' +
-  '<b>Bold text</b>, <i>Italic text</i><br/ ><br />' +
+  '<p>' +
+  '<b>Bold text</b>, <i>Italic text</i><br/ >' +
   '<a href="http://www.ski-o.ru" target="__blank">Example link</a>' +
+  '</p>' +
+  '<ul>' +
+    '<li>To do 1</li>' +
+    '<li>To do 2</li>' +
+  '</ul>' +
+  '<pre>name  result</pre>' +
   '<figure><img src="image.jpg" /><figcaption>Caption</figcaption></figure>' +
-  '<p></p>' +
   '<figure><img src="image2.jpg" /><figcaption>Caption 2</figcaption></figure>' +
-  '<p></p>' +
   '<figure><iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe><figcaption>Caption 3</figcaption></figure>' +
-  '<p></p>';
+  '<figure><iframe class="instagram-media instagram-media-rendered" id="instagram-embed-0" src="https://www.instagram.com/p/BMWm4GPjxEV" height="460" data-instgrm="true" data-instgrm-payload-id="instagram-media-payload-0" scrolling="no" style="background:rgb(255, 255, 255);border:0px;margin:1px;max-width:658px;width:calc(100% - 2px);border-radius:4px;box-shadow:rgba(0, 0, 0, 0.498039) 0px 0px 1px 0px, rgba(0, 0, 0, 0.14902) 0px 1px 10px 0px;display:block;padding:0px;"></iframe><figcaption>Caption 4</figcaption><</figure>'
+  ;
 
 const TOOLBAR_BOTTOM_MARGIN = 15;
 const TOOLBAR_SIDE_MARGIN = 15;
@@ -327,9 +379,9 @@ const TOOLBAR_SIDE_MARGIN = 15;
 const intialState = convertFromHTML(sampleMarkup);
 
 const blockRenderMap = Map({
-  'unstyled': {
-    element: 'p'
-  }
+  // 'unstyled': {
+  //   element: 'p'
+  // }
 });
 
 const extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(blockRenderMap);
@@ -486,8 +538,8 @@ class RichEditor extends Component {
     const addButtonRect = this.addButton.getBoundingClientRect();
 
     let left = editorRect.left
-      - addButtonRect.width
-      - selectedDOMNodeRect.width / 2
+      - addButtonRect.width * 2
+      // - selectedDOMNodeRect.width / 2
       ;
 
     if (left < TOOLBAR_SIDE_MARGIN) {
