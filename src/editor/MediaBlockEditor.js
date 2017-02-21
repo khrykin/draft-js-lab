@@ -1,16 +1,20 @@
 import React, { Component } from 'react';
 import { removeBlock } from './utils';
 
+import { Entity } from 'draft-js';
+
+import Media from './Media';
+
 export default class MediaBlockEditor extends Component {
 
-  // constructor(props) {
-  //   super(props);
-  //   const key = props.block.getEntityAt(0);
-  //   const entity = Entity.get(key);
-  //   const data = entity.getData();
-  //
-  //   this.state = data;
-  // }
+  constructor(props) {
+    super(props);
+    const key = props.block.getEntityAt(0);
+    const entity = Entity.get(key);
+    const data = entity.getData();
+
+    this.state = data;
+  }
 
   handleKeyPress = e => {
     if (e.key === 'Enter') {
@@ -61,64 +65,62 @@ export default class MediaBlockEditor extends Component {
   }
 
   render() {
-  //   const key = this.props.block.getEntityAt(0);
-  //   const entity = Entity.get(key);
-  //   const data = entity.getData();
-  //   const type = entity.getType();
-  //
-  //   if (type === 'HTML') {
-  //     return (
-  //       <div>
-  //         { this.state.edit ? (
-  //           <span>
-  //             <HTMLEditor
-  //               value={this.state.content}
-  //               onChange={this.setField('content')}
-  //               />
-  //             <a href="" onClick={this.toggleEdit}>Done</a>
-  //           </span>
-  //         ) : (
-  //           <span>
-  //             <div dangerouslySetInnerHTML={{__html: this.state.content }} />
-  //             <a href="" onClick={this.toggleEdit}>Edit</a>
-  //           </span>
-  //         ) }
-  //       </div>
-  //
-  //     )
-  //   }
-  //
-  //   return (
-  //     <div className="relative">
-  //       <a href="" className="absolute right--1 top--1" onClick={this.delete}>
-  //         x
-  //       </a>
-  //       <Media {...this.props} />
-  //       <figcaption>
-  //         { this.state.edit ? (
-  //           <span>
-  //             <input
-  //               type="text"
-  //               defaultValue={this.state.src}
-  //               onKeyPress={this.handleKeyPress}
-  //               onChange={this.setInputField('src')}
-  //               />
-  //             <input
-  //               type="text"
-  //               defaultValue={this.state.caption}
-  //               onKeyPress={this.handleKeyPress}
-  //               onChange={this.setInputField('caption')}
-  //               />
-  //           </span>
-  //         ) : (
-  //           <span onClick={this.edit}>
-  //             { this.state.caption || 'Подпись...'}
-  //           </span>
-  //         ) }
-  //       </figcaption>
-  //     </div>
-  //   );
-  // }
-    return <div>MEDIA BLOCK EDITOR</div>;
+    const key = this.props.block.getEntityAt(0);
+    const entity = Entity.get(key);
+    const data = entity.getData();
+    const type = entity.getType();
+
+    if (type === 'HTML') {
+      return (
+        <div>
+          { this.state.edit ? (
+            <span>
+              <HTMLEditor
+                value={this.state.content}
+                onChange={this.setField('content')}
+                />
+              <a href="" onClick={this.toggleEdit}>Done</a>
+            </span>
+          ) : (
+            <span>
+              <div dangerouslySetInnerHTML={{__html: this.state.content }} />
+              <a href="" onClick={this.toggleEdit}>Edit</a>
+            </span>
+          ) }
+        </div>
+
+      )
+    }
+
+    return (
+      <div className="relative">
+        <a href="" className="absolute right--1 top--1" onClick={this.delete}>
+          x
+        </a>
+        <Media {...this.props} />
+        <figcaption>
+          { this.state.edit ? (
+            <span>
+              <input
+                type="text"
+                defaultValue={this.state.src}
+                onKeyPress={this.handleKeyPress}
+                onChange={this.setInputField('src')}
+                />
+              <input
+                type="text"
+                defaultValue={this.state.caption}
+                onKeyPress={this.handleKeyPress}
+                onChange={this.setInputField('caption')}
+                />
+            </span>
+          ) : (
+            <span onClick={this.edit}>
+              { this.state.caption || 'Подпись...'}
+            </span>
+          ) }
+        </figcaption>
+      </div>
+    );
   }
 }

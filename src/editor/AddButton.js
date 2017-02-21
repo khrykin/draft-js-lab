@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Button from './Button';
 
 export default class AddButton extends Component {
   state = {

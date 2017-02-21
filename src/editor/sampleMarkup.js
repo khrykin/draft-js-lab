@@ -47,8 +47,14 @@ let html = `
   <img src="image.jpg" />
   <figcaption>Caption</figcaption>
 </figure>
+<div></div>
 
+<figure>
+  <img src="image2.jpg" />
+  <figcaption>Caption 2</figcaption>
+</figure>
 
+<div></div>
 `;
 //
 // import { convertToHTML, convertFromHTML } from 'draft-convert';

@@ -9,11 +9,12 @@ import {
  */
 
 export function removeBlock(editorState, blockKey) {
- // const editorState = store.getEditorState();
+
  let content = editorState.getCurrentContent();
 
  const beforeKey = content.getKeyBefore(blockKey);
  const beforeBlock = content.getBlockForKey(beforeKey);
+ const currentBlock = content.getBlockForKey(blockKey);
 
  // Note: if the focused block is the first block then it is reduced to an
  // unstyled block with no character
@@ -22,7 +23,7 @@ export function removeBlock(editorState, blockKey) {
      anchorKey: blockKey,
      anchorOffset: 0,
      focusKey: blockKey,
-     focusOffset: 1,
+     focusOffset: currentBlock.getLength(),
    });
    // change the blocktype and remove the characterList entry with the sticker
    content = Modifier.removeRange(content, targetRange, 'backward');
@@ -31,6 +32,7 @@ export function removeBlock(editorState, blockKey) {
      targetRange,
      'unstyled'
    );
+
    const newState = EditorState.push(editorState, content, 'remove-block');
 
    // force to new selection
@@ -43,11 +45,13 @@ export function removeBlock(editorState, blockKey) {
    return EditorState.forceSelection(newState, newSelection);
  }
 
+
+
  const targetRange = new SelectionState({
    anchorKey: beforeKey,
    anchorOffset: beforeBlock.getLength(),
    focusKey: blockKey,
-   focusOffset: 1,
+   focusOffset: currentBlock.getLength(),
  });
 
  content = Modifier.removeRange(content, targetRange, 'backward');
@@ -60,9 +64,13 @@ export function removeBlock(editorState, blockKey) {
    focusKey: beforeKey,
    focusOffset: beforeBlock.getLength(),
  });
+
  return EditorState.forceSelection(newState, newSelection);
 }
 
+/**
+ * Collapses current selection to it's end
+ */
 
 export function collapseSelectionToTheEnd(editorState) {
   const currentSelection = editorState.getSelection();
@@ -76,6 +84,6 @@ export function collapseSelectionToTheEnd(editorState) {
     focusOffset: currentOffset,
     anchorOffset: currentOffset
   });
-  
+
   return selectionState;
 }
