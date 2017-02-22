@@ -205,11 +205,17 @@ class RichEditor extends Component {
         editable: false,
         props: {
           editor: this,
-          onMouseDown: () => {
-            console.log('Clicked type', type);
+          onDragStart: () => {
+            console.log('onDragStart type', type);
+            this.editor.focus();
             this.setState({
-              isDragging: contentBlock
-            })
+              isDragging: contentBlock,
+              readOnly: false
+            });
+          },
+          onDragEnd: () => {
+            console.log('DROPPED');
+            this.handleDrop(this.state.editorState.getSelection());
           }
         },
       };
@@ -308,7 +314,11 @@ class RichEditor extends Component {
       });
     }
 
-    if (selectionRect.width > 0) {
+    const { editorState, toolbarStyle } = this.state;
+    const currentBlock = getSelectedBlock(editorState);
+    const currentBlockType = currentBlock.getType();
+
+    if (selectionRect.width > 0 && currentBlockType !== 'atomic') {
       return this.setState({
         toolbarStyle: getToolbarStyle(selectionRect, this.toolbar),
         readOnly: true,
@@ -369,6 +379,7 @@ class RichEditor extends Component {
   }
 
   handleDrop = (selection, dataTransfer, isInternal) => {
+    console.log('HANDLE DROP');
     const { editorState, isDragging } = this.state;
     if (isDragging) {
       const newState = moveAtomicBlock(
@@ -491,7 +502,7 @@ class RichEditor extends Component {
   }
 
   addHTML= () => {
-    this.addMedia('HTML', { content: '<b>Hello</b>' })()
+    this.addMedia('TABLE', { content: 'a  b\nc  d' })()
   }
 
   closeLinkEditor = () => {

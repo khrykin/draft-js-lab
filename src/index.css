@@ -16,3 +16,24 @@ iframe {
   /*width: 100%;*/
   /*min-height: 300px;*/
 }
+
+table, td, td, th {
+  /*border: 1px solid gray;*/
+  border-collapse: collapse;
+  padding: .5rem;
+}
+
+figure {
+  text-align: center;
+}
+
+tr {
+  border-bottom: 1px solid gray;
+}
+
+table {
+  display: inline-block;
+  text-align: left;
+  /*width: 80%;*/
+  /*table-layout: fixed;*/
+}

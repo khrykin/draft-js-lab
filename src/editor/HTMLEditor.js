@@ -14,6 +14,7 @@ export default class HTMLEditor extends Component {
   render() {
     return (
         <textarea
+          className="code"
           value={this.props.value}
           onChange={this.change} />
     );

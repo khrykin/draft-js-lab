@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { removeBlock } from './utils';
 
 import Media from './Media';
-import HTMLEditor from './HTMLEditor';
+import TableEditor, { CSVToHTML } from './TableEditor';
 
 export default class MediaBlockEditor extends Component {
 
@@ -50,7 +50,12 @@ export default class MediaBlockEditor extends Component {
     });
   }
 
-  save = () => {
+  save = e => {
+
+    if (e) {
+      e.preventDefault();
+    }
+
     const { editor } = this.props.blockProps;
     this.setState({ edit: false }, () => {
       editor.setState({ readOnly: false });
@@ -64,6 +69,8 @@ export default class MediaBlockEditor extends Component {
     });
   }
 
+
+
   render() {
     const key = this.props.block.getEntityAt(0);
     const { contentState } = this.props;
@@ -71,21 +78,27 @@ export default class MediaBlockEditor extends Component {
     // const data = entity.getData();
     const type = entity.getType();
 
-    if (type === 'HTML') {
+    const { editor } = this.props.blockProps;
+
+    if (type === 'TABLE') {
       return (
-        <div>
+        <div
+          draggable
+          onDragStart={this.props.blockProps.onDragStart}
+          onDragEnd={this.props.blockProps.onDragEnd}
+          >
           { this.state.edit ? (
             <span>
-              <HTMLEditor
+              <TableEditor
                 value={this.state.content}
                 onChange={this.setField('content')}
                 />
-              <a href="" onClick={this.toggleEdit}>Done</a>
+              <a href="" onClick={this.save}>Done</a>
             </span>
           ) : (
             <span>
-              <div dangerouslySetInnerHTML={{__html: this.state.content }} />
-              <a href="" onClick={this.toggleEdit}>Edit</a>
+              <div dangerouslySetInnerHTML={{__html: CSVToHTML(this.state.content) }} />
+              <a href="" onClick={this.edit}>Edit</a>
             </span>
           ) }
         </div>
@@ -94,7 +107,11 @@ export default class MediaBlockEditor extends Component {
     }
 
     return (
-      <div className="relative" onMouseDown={this.props.blockProps.onMouseDown}>
+      <div
+        className="relative"
+        draggable
+        onDragStart={this.props.blockProps.onDragStart}
+        >
         <a href="" className="absolute right--1 top--1" onClick={this.delete}>
           x
         </a>
