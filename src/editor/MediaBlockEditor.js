@@ -94,7 +94,7 @@ export default class MediaBlockEditor extends Component {
     }
 
     return (
-      <div className="relative">
+      <div className="relative" onMouseDown={this.props.blockProps.onMouseDown}>
         <a href="" className="absolute right--1 top--1" onClick={this.delete}>
           x
         </a>

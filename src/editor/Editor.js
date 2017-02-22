@@ -17,12 +17,14 @@ import 'draft-js/dist/Draft.css'
 import {
   getSelectionEntity,
   getSelectedBlocksType,
+  getSelectedBlock,
   getSelectionInlineStyle,
   handleNewLine,
 } from 'draftjs-utils';
 
 import {
-  collapseSelectionToTheEnd
+  collapseSelectionToTheEnd,
+  moveAtomicBlock
 } from './utils';
 
 
@@ -78,16 +80,16 @@ function getToolbarStyle(selectionRect, toolbar) {
     top = 2 * TOOLBAR_BOTTOM_MARGIN + document.body.scrollTop;
   }
 
-  console.log('toolbar.offsetWidth', toolbar.offsetWidth);
-  console.log('toolbar.offsetHeight', toolbar.offsetHeight);
-  console.log('selectionRect.top', selectionRect.top);
-  console.log('document.body.scrollTop', document.body.scrollTop);
-
-  console.log("TOOLBAR_POSITION", {
-    left,
-    top,
-    visibility: 'visible'
-  });
+  // console.log('toolbar.offsetWidth', toolbar.offsetWidth);
+  // console.log('toolbar.offsetHeight', toolbar.offsetHeight);
+  // console.log('selectionRect.top', selectionRect.top);
+  // console.log('document.body.scrollTop', document.body.scrollTop);
+  //
+  // console.log("TOOLBAR_POSITION", {
+  //   left,
+  //   top,
+  //   visibility: 'visible'
+  // });
 
   return {
     left,
@@ -178,6 +180,10 @@ class RichEditor extends Component {
   onChange = (editorState, cb = () => {}) => {
     // const selectionRect = getVisibleSelectionRect(window) || {};
     this.setState({ editorState }, () => {
+
+      const currentBlock = getSelectedBlock(this.state.editorState);
+      console.log('currentBlock', currentBlock.getType());
+
       this.props.onChange(convertToHTML(this.state.editorState));
       // console.log("EDITOR_STATE", JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())));
       this.setAddButtonPosition();
@@ -199,6 +205,12 @@ class RichEditor extends Component {
         editable: false,
         props: {
           editor: this,
+          onMouseDown: () => {
+            console.log('Clicked type', type);
+            this.setState({
+              isDragging: contentBlock
+            })
+          }
         },
       };
     }
@@ -357,10 +369,19 @@ class RichEditor extends Component {
   }
 
   handleDrop = (selection, dataTransfer, isInternal) => {
-    console.log('HANDLE DROP');
-    console.log('selection', selection.serialize());
-    console.log('dataTransfer', dataTransfer);
-    console.log('isInternal', isInternal);
+    const { editorState, isDragging } = this.state;
+    if (isDragging) {
+      const newState = moveAtomicBlock(
+        editorState,
+        isDragging,
+        selection,
+        'move-block'
+      );
+
+      this.onChange(newState);
+      return 'handled';
+    }
+
     return 'not-handled';
   }
 
