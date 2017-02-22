@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
+import React from 'react';
 
 
 export function HashTag(props) {
-  const url = '/tags/' + props.decoratedText.replace(/^\#/, '');
+  const url = '/tags/' + props.decoratedText.replace(/^#/, '');
   return (
     <a href={url}>
       { props.children }
@@ -32,5 +32,5 @@ export function URLLink(props) {
 export function Image(props) {
   // const entity = Entity.get(props.entityKey);
   // const { src } = entity.getData();
-  return <img src={"image.jpg"} />
+  return <img alt="{src}" src={"image.jpg"} />
 }

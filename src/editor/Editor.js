@@ -1,23 +1,13 @@
 import React, { Component } from 'react';
-import { Map, List, Repeat } from 'immutable';
+import { Map } from 'immutable';
 import {
   Editor,
   EditorState,
-  ContentState,
   RichUtils,
-  Entity,
-  Modifier,
-  CharacterMetadata,
-  ContentBlock,
-  BlockMapBuilder,
-  SelectionState,
   CompositeDecorator,
   getVisibleSelectionRect,
   DefaultDraftBlockRenderMap,
-  convertToRaw,
-  DraftEditorBlock,
   AtomicBlockUtils,
-  convertFromRaw
 } from 'draft-js';
 
 import 'draft-js/dist/Draft.css'
@@ -26,15 +16,12 @@ import 'draft-js/dist/Draft.css'
 
 import {
   getSelectionEntity,
-  getEntityRange,
   getSelectedBlocksType,
   getSelectionInlineStyle,
   handleNewLine,
-  insertNewUnstyledBlock,
 } from 'draftjs-utils';
 
 import {
-  removeBlock,
   collapseSelectionToTheEnd
 } from './utils';
 
@@ -53,10 +40,10 @@ import sampleMarkup from "./sampleMarkup";
 
 /* Components imports */
 
-import Instagram from 'react-instagram-embed';
-import Media from './Media';
+// import Instagram from 'react-instagram-embed';
+// import Media from './Media';
 import MediaBlockEditor from './MediaBlockEditor';
-import HTMLEditor from './HTMLEditor';
+// import HTMLEditor from './HTMLEditor';
 import LinkEditor from './LinkEditor';
 import AddButton from './AddButton';
 import Button from './Button';
@@ -65,9 +52,11 @@ import {
   HashTag,
   Link,
   URLLink,
-  Image,
+  // Image,
 } from './EntitiesWrappers';
 
+const TOOLBAR_BOTTOM_MARGIN = 15;
+const TOOLBAR_SIDE_MARGIN = 15;
 
 
 function getToolbarStyle(selectionRect, toolbar) {
@@ -89,6 +78,12 @@ function getToolbarStyle(selectionRect, toolbar) {
     top = 2 * TOOLBAR_BOTTOM_MARGIN + document.body.scrollTop;
   }
 
+  console.log("TOOLBAR_POSITION", {
+    left,
+    top,
+    visibility: 'visible'
+  });
+
   return {
     left,
     top,
@@ -97,8 +92,6 @@ function getToolbarStyle(selectionRect, toolbar) {
 }
 
 
-const TOOLBAR_BOTTOM_MARGIN = 15;
-const TOOLBAR_SIDE_MARGIN = 15;
 
 const intialState = convertFromHTML(sampleMarkup);
 
@@ -132,7 +125,6 @@ class RichEditor extends Component {
 
   state = {
     editorState: EditorState.createWithContent(intialState, this.createDecorator()),
-    selectionRect: {},
     toolbarStyle: {
       visibility: 'hidden'
     },
@@ -143,79 +135,16 @@ class RichEditor extends Component {
   };
 
   componentDidUpdate(_, prevState) {
-    const selectionIsCollapsed =
-      this.state.editorState
-      .getSelection()
-      .isCollapsed()
-      ;
 
-    const { selectionRect } = this.state;
-
-    if (
-      !selectionIsCollapsed &&
-      this.state.currentEntity &&
-      this.state.currentEntity.type === 'LINK' &&
-      this.state.linkEditorStyle.visibility !== 'visible'
-    ) {
-      return this.setState({
-        linkEditorStyle: getToolbarStyle(selectionRect, this.linkEditor),
-        toolbarStyle: {
-          visibility: 'hidden'
-        },
-      }, () => {
-        setTimeout(() => this.linkEditorInput.focus(), 0);
-      });
-    }
-
-    if (
-      selectionRect.width > 0 &&
-      selectionRect.width !== prevState.selectionRect.width
-    ) {
-      return this.setState({
-        toolbarStyle: getToolbarStyle(selectionRect, this.toolbar),
-        linkEditorStyle: {
-          visibility: 'hidden'
-        },
-      });
-    }
-
-    if (
-      selectionIsCollapsed &&
-      (
-        this.state.toolbarStyle.visibility === 'visible' ||
-        this.state.linkEditorStyle.visibility === 'visible'
-      )
-    ) {
-      this.setState({
-        toolbarStyle: {
-          visibility: 'hidden'
-        },
-        linkEditorStyle: {
-          visibility: 'hidden'
-        }
-      });
-    }
   }
 
   onChange = (editorState, cb = () => {}) => {
-    const selectionRect = getVisibleSelectionRect(window) || {};
-    const currentEntityKey = getSelectionEntity(editorState);
-    const currentEntity = currentEntityKey && Entity.get(currentEntityKey);
-    this.setState({
-      editorState,
-      selectionRect,
-      currentEntity,
-      currentEntityKey
-    }, () => {
-      this.props.onChange(
-        // convertToRaw(this.state.editorState.getCurrentContent())
-        convertToHTML(this.state.editorState)
-      );
-      console.log("EDITOR_STATE", JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())));
-      if (this.state.linkEditorStyle.visibility !== 'visible') {
-        // setTimeout(() => this.editor.focus(), 0);
-      }
+    // const selectionRect = getVisibleSelectionRect(window) || {};
+    this.setState({ editorState }, () => {
+      this.props.onChange(convertToHTML(this.state.editorState));
+      // console.log("EDITOR_STATE", JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())));
       this.setAddButtonPosition();
+      this.setToolbarPosition();
       cb();
     });
   }
@@ -253,6 +182,20 @@ class RichEditor extends Component {
     return node;
   };
 
+  getCurrentEntity = () => {
+    const { editorState } = this.state;
+    const currentEntityKey = getSelectionEntity(editorState);
+
+    if (!currentEntityKey) return;
+
+    const currentContent = editorState.getCurrentContent();
+    return currentContent.getEntity(currentEntityKey);
+  }
+
+  getSelectionRect = () => {
+    return getVisibleSelectionRect(window) || {};
+  }
+
   setAddButtonPosition = () => {
     const editorRect = this.editorWrapper.getBoundingClientRect();
     const selectedDOMNode = this.getSelectedBlockElement();
@@ -283,6 +226,61 @@ class RichEditor extends Component {
         left
       }
     });
+  }
+
+  setToolbarPosition = () => {
+    const selectionIsCollapsed =
+      this.state.editorState
+      .getSelection()
+      .isCollapsed()
+      ;
+
+    const currentEntity = this.getCurrentEntity();
+    const selectionRect = this.getSelectionRect();
+
+    const linkIsSelected = (
+      !selectionIsCollapsed &&
+      currentEntity &&
+      currentEntity.type === 'LINK' &&
+      this.state.linkEditorStyle.visibility !== 'visible'
+    );
+
+    if (linkIsSelected) {
+      return this.setState({
+        linkEditorStyle: getToolbarStyle(selectionRect, this.linkEditor),
+        toolbarStyle: {
+          visibility: 'hidden'
+        },
+      }, () => {
+        setTimeout(() => this.linkEditorInput.focus(), 0);
+      });
+    }
+
+    if (selectionRect.width > 0) {
+      return this.setState({
+        toolbarStyle: getToolbarStyle(selectionRect, this.toolbar),
+        linkEditorStyle: {
+          visibility: 'hidden'
+        },
+      });
+    }
+
+    if (
+      selectionIsCollapsed &&
+      (
+        this.state.toolbarStyle.visibility === 'visible' ||
+        this.state.linkEditorStyle.visibility === 'visible'
+      )
+    ) {
+      this.setState({
+        toolbarStyle: {
+          visibility: 'hidden'
+        },
+        linkEditorStyle: {
+          visibility: 'hidden'
+        }
+      });
+    }
   }
 
   selectionHasInlineStyle = style => {
@@ -316,18 +314,27 @@ class RichEditor extends Component {
     return 'not-handled';
   }
 
+  handleDrop = (selection, dataTransfer, isInternal) => {
+    console.log('HANDLE DROP');
+    console.log('selection', selection.serialize());
+    console.log('dataTransfer', dataTransfer);
+    console.log('isInternal', isInternal);
+    return 'not-handled';
+  }
+
   setEntityData = data => {
     const {
-      editorState,
-      currentEntity,
-      currentEntityKey
+      editorState
     } = this.state;
 
-    Entity.replaceData(currentEntityKey, data);
+    const currentEntityKey = getSelectionEntity(editorState);
+    const contentState = editorState.getCurrentContent();
+    contentState.replaceEntityData(currentEntityKey, data);
   }
 
   replaceEntityData = (key, data) => {
-    Entity.replaceData(key, data);
+    const contentState = this.state.editorState.getCurrentContent();
+    contentState.replaceEntityData(key, data);
   }
 
   toggleBlockType = type => () => {
@@ -384,11 +391,14 @@ class RichEditor extends Component {
   addMedia = (type, data) => {
     return () => {
       const { editorState } = this.state;
-      const key = Entity.create(
+      const contentState = editorState.getCurrentContent();
+      const contentStateWithEntity = contentState.createEntity(
         type,
         'IMMUTABLE',
         data
       );
+
+      const key = contentStateWithEntity.getLastCreatedEntityKey();
 
       const stateWithAtomicBlock =  AtomicBlockUtils.insertAtomicBlock(
         editorState,
@@ -422,7 +432,6 @@ class RichEditor extends Component {
   closeLinkEditor = () => {
     const { editorState } = this.state;
     const selectionState = collapseSelectionToTheEnd(editorState);
-
     this.onChange(EditorState.forceSelection(editorState, selectionState));
   }
 
@@ -508,6 +517,7 @@ class RichEditor extends Component {
             handleReturn={this.handleReturn}
             editorState={this.state.editorState}
             handleKeyCommand={this.handleKeyCommand}
+            handleDrop={this.handleDrop}
             blockRendererFn={this.blockRenderer}
             blockRenderMap={extendedBlockRenderMap}
             readOnly={this.state.readOnly}
@@ -527,7 +537,7 @@ class RichEditor extends Component {
           inputDOMNodeRef={n => this.linkEditorInput = n}
           addLink={this.addLink}
           removeLink={this.removeLink}
-          href={this.state.currentEntity && this.state.currentEntity.getData().href}
+          href={this.getCurrentEntity() && this.getCurrentEntity().getData().href}
           style={this.state.linkEditorStyle}
           onChange={this.setEntityData}
           onClose={this.closeLinkEditor}

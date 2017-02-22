@@ -1,18 +1,7 @@
 import React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import Instagram from 'react-instagram-embed';
+// import Instagram from 'react-instagram-embed';
 import { convertToHTML, convertFromHTML } from 'draft-convert';
 import { Entity } from 'draft-js';
-
-
-let instagramSrc = null;
-
-
-class InstagramTag extends React.Component {
-  render() {
-    return
-  }
-}
 
 
 function toHTML(editorState) {
@@ -38,7 +27,7 @@ function toHTML(editorState) {
             target={entity.data.target}>
             {originalText}
           </a>
-        );  
+        );
       }
       const { caption, src } = entity.data;
       const captionHTML = caption && caption.length ? `<figcaption>${caption}</figcaption>` : '';
@@ -113,7 +102,7 @@ function fromHTML(html) {
     },
     textToEntity(text) {
         const result = [];
-        text.replace(/\@(\w+)/g, (match, name, offset) => {
+        text.replace(/@(\w+)/g, (match, name, offset) => {
             const entityKey = Entity.create(
                 'AT-MENTION',
                 'IMMUTABLE',

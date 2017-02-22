@@ -3,7 +3,9 @@ import { Entity } from 'draft-js';
 
 function findWithRegex(regex, contentBlock, callback) {
   const text = contentBlock.getText();
-  let matchArr, start;
+  let matchArr = [];
+  let start = 0;
+  // eslint-disable-next-line
   while ((matchArr = regex.exec(text)) !== null) {
     start = matchArr.index;
     callback(start, start + matchArr[0].length);
@@ -11,7 +13,7 @@ function findWithRegex(regex, contentBlock, callback) {
 }
 
 const URL_REGEX = /(https?:\/\/(www\.)?)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g;
-const HASHTAG_REGEX = /\#[A-Za-zА-Яа-я0-9]+/g;
+const HASHTAG_REGEX = /#[A-Za-zА-Яа-я0-9]+/g;
 
 
 /* --------------------------- Public methods ------------------------------- */

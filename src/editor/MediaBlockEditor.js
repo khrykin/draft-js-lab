@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
 import { removeBlock } from './utils';
 
-import { Entity } from 'draft-js';
-
 import Media from './Media';
+import HTMLEditor from './HTMLEditor';
 
 export default class MediaBlockEditor extends Component {
 
   constructor(props) {
     super(props);
     const key = props.block.getEntityAt(0);
-    const entity = Entity.get(key);
+    const { contentState } = props;
+    const entity = contentState.getEntity(key);
     const data = entity.getData();
 
     this.state = data;
@@ -66,8 +66,9 @@ export default class MediaBlockEditor extends Component {
 
   render() {
     const key = this.props.block.getEntityAt(0);
-    const entity = Entity.get(key);
-    const data = entity.getData();
+    const { contentState } = this.props;
+    const entity = contentState.getEntity(key);
+    // const data = entity.getData();
     const type = entity.getType();
 
     if (type === 'HTML') {

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Entity } from 'draft-js';
 import Instagram from 'react-instagram-embed';
 
 export default function Media(props) {
@@ -12,7 +11,7 @@ export default function Media(props) {
 
   if (type === 'PHOTO')
     return (
-      <img src={data.src} />
+      <img alt={data.src} src={data.src} />
     );
   if (type === 'YOUTUBE')
     return (

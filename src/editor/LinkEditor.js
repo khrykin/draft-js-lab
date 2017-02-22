@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+// import ReactDOM from 'react-dom';
 
 import Button from './Button';
 
@@ -13,6 +14,23 @@ export default class LinkEditor extends Component {
     href: this.props.href || '',
     blank: this.props.target === '__blank',
   }
+
+  //
+  // componentDidMount() {
+  //   document.addEventListener('click', this.handleClickOutside, true);
+  // }
+  //
+  // componentWillUnmount() {
+  //   document.removeEventListener('click', this.handleClickOutside, true);
+  // }
+  //
+  // handleClickOutside(e) {
+  //   const domNode = ReactDOM.findDOMNode(this);
+  //   if (!domNode || !domNode.contains(e.target)) {
+  //     this.props.onClose();
+  //   }
+  // }
+
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.href && nextProps.href !== this.state.href) {

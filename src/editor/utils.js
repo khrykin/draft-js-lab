@@ -69,7 +69,7 @@ export function removeBlock(editorState, blockKey) {
 }
 
 /**
- * Collapses current selection to it's end
+ * Collapses current selection to its end
  */
 
 export function collapseSelectionToTheEnd(editorState) {
