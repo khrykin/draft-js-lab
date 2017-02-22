@@ -78,6 +78,11 @@ function getToolbarStyle(selectionRect, toolbar) {
     top = 2 * TOOLBAR_BOTTOM_MARGIN + document.body.scrollTop;
   }
 
+  console.log('toolbar.offsetWidth', toolbar.offsetWidth);
+  console.log('toolbar.offsetHeight', toolbar.offsetHeight);
+  console.log('selectionRect.top', selectionRect.top);
+  console.log('document.body.scrollTop', document.body.scrollTop);
+
   console.log("TOOLBAR_POSITION", {
     left,
     top,
@@ -107,6 +112,38 @@ const extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(blockRenderMap);
 //convertFromRaw(raw);
 
 class RichEditor extends Component {
+  //
+  componentDidMount() {
+    window.addEventListener('click', this.handleReadOnly);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('click', this.handleReadOnly);
+  }
+
+  /**
+   * Removes readOnly set by toolbars in order to preserve selction state
+   * of editor
+   */
+
+  handleReadOnly = (e) => {
+    setTimeout(() => {
+
+      /* this allows atomic block editors to control readOnly too
+       * since selection is collapsed when you choose an atomic block
+       */
+
+      const selectionIsCollapsed =
+        this.state.editorState
+        .getSelection()
+        .isCollapsed()
+        ;
+
+      if (this.state.readOnly && !selectionIsCollapsed) {
+        this.setState({ readOnly: false });
+      }
+    }, 0);
+  }
 
   createDecorator = () => new CompositeDecorator([
     {
@@ -238,6 +275,8 @@ class RichEditor extends Component {
     const currentEntity = this.getCurrentEntity();
     const selectionRect = this.getSelectionRect();
 
+    console.log('selectionRect', selectionRect);
+
     const linkIsSelected = (
       !selectionIsCollapsed &&
       currentEntity &&
@@ -246,19 +285,21 @@ class RichEditor extends Component {
     );
 
     if (linkIsSelected) {
+      console.log('this.linkEditor', this.linkEditor);
       return this.setState({
         linkEditorStyle: getToolbarStyle(selectionRect, this.linkEditor),
         toolbarStyle: {
           visibility: 'hidden'
         },
       }, () => {
-        setTimeout(() => this.linkEditorInput.focus(), 0);
+        // setTimeout(() => this.linkEditorInput.focus(), 0);
       });
     }
 
     if (selectionRect.width > 0) {
       return this.setState({
         toolbarStyle: getToolbarStyle(selectionRect, this.toolbar),
+        readOnly: true,
         linkEditorStyle: {
           visibility: 'hidden'
         },
@@ -273,6 +314,7 @@ class RichEditor extends Component {
       )
     ) {
       this.setState({
+        readOnly: false,
         toolbarStyle: {
           visibility: 'hidden'
         },
@@ -373,7 +415,9 @@ class RichEditor extends Component {
         editorState,
         editorState.getSelection(),
         key
-      )
+      ), () => {
+        this.setState({ readOnly: false });
+      }
     );
   }
 
