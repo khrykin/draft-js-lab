@@ -18,36 +18,68 @@
 // `;
 
 let html = `
-<h2>Header</h2>
-<p>
-  This is plain paragraph. This is a <a href="http://ski-o.ru">link</a>.  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean imperdiet arcu sit amet tortor molestie sodales. Pellentesque neque arcu, lobortis sit amet dui ut, tristique suscipit mi. Sed pulvinar id lectus nec ultrices. Suspendisse faucibus mi vitae efficitur aliquam. Nam sit amet pellentesque elit. Donec a fringilla odio. Aliquam erat lorem, ornare nec tempus quis, tincidunt eu risus. Donec ligula ex, consectetur ac dolor at, commodo venenatis est.
-</p>
-  This is plain text. This is a <a target="__blank" href="http://ski-o.ru">link</a> with target="__blank". Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean imperdiet arcu sit amet tortor molestie sodales. Pellentesque neque arcu, lobortis sit amet dui ut, tristique suscipit mi. Sed pulvinar id lectus nec ultrices. Suspendisse faucibus mi vitae efficitur aliquam. Nam sit amet pellentesque elit. Donec a fringilla odio. Aliquam erat lorem, ornare nec tempus quis, tincidunt eu risus. Donec ligula ex, consectetur ac dolor at, commodo venenatis est.
-<div>
-  This is text inside div. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean imperdiet arcu sit amet tortor molestie sodales. Pellentesque neque arcu, lobortis sit amet dui ut, tristique suscipit mi. Sed pulvinar id lectus nec ultrices. Suspendisse faucibus mi vitae efficitur aliquam. Nam sit amet pellentesque elit. Donec a fringilla odio. Aliquam erat lorem, ornare nec tempus quis, tincidunt eu risus. Donec ligula ex, consectetur ac dolor at, commodo venenatis est.
-</div>
-
-<table><tbody><tr><th>№п/п</th><th>Фамилия, имя</th><th>Коллектив</th><th>Квал</th><th>Номер</th><th>ГР</th><th>Результат</th><th>Отставание</th><th>Место </th></tr><tr><td>1</td><td>Сушко Екатерина</td><td>Ориента-SKI-O</td><td>Iю</td><td>1014</td><td>2005</td><td>00:25:44</td><td>+00:00</td><td>1 </td></tr><tr><td>2</td><td>Хмелевская Варвара</td><td>Хорошево СШ№102</td><td>II</td><td>1013</td><td>2005</td><td>00:26:59</td><td>+01:15</td><td>2 </td></tr><tr><td>3</td><td>Силакова Анастасия</td><td>Ориента-СКРУМ</td><td>Iю</td><td>1019</td><td>2006</td><td>00:27:11</td><td>+01:27</td><td>3 </td></tr><tr><td>4</td><td>Иванова Елизавета</td><td>ЮЗАО-TEAM</td><td>Iю</td><td>1006</td><td>2005</td><td>00:28:46</td><td>+03:02</td><td>4 </td></tr><tr><td>5</td><td>Заблоцкая Василиса</td><td>Ориента-SKI-O</td><td>Iю</td><td>1022</td><td>2005</td><td>00:30:28</td><td>+04:44</td><td>5 </td></tr><tr><td>6</td><td>Шмелёва Алина</td><td>Ориента-SKI-O</td><td>IIю</td><td>1009</td><td>2005</td><td>00:30:40</td><td>+04:56</td><td>6 </td></tr><tr><td>7</td><td>Буртовская Александра</td><td>Ориента-SKI-O</td><td>Iю</td><td>1005</td><td>2005</td><td>00:31:15</td><td>+05:31</td><td>7 </td></tr><tr><td>8</td><td>Темнова Софья</td><td>CRAFT-ОРИЕНТА</td><td>Iю</td><td>1007</td><td>2005</td><td>00:33:36</td><td>+07:52</td><td>8 </td></tr><tr><td>9</td><td>Зверева Ева</td><td>Ориента-SKI-O</td><td>Iю</td><td>1018</td><td>2005</td><td>00:34:12</td><td>+08:28</td><td>9 </td></tr><tr><td>10</td><td>Кунина Екатерина</td><td>Ориента-SKI-O</td><td>Iю</td><td>1011</td><td>2006</td><td>00:34:35</td><td>+08:51</td><td>10 </td></tr><tr><td>11</td><td>Зубкова Дарья</td><td>CRAFT-ОРИЕНТА</td><td>Iю</td><td>1010</td><td>2006</td><td>00:37:34</td><td>+11:50</td><td>11 </td></tr><tr><td>12</td><td>Гомозова Анна</td><td>Ориента-SKI-O</td><td>IIю</td><td>1001</td><td>2005</td><td>00:38:45</td><td>+13:01</td><td>12 </td></tr><tr><td>13</td><td>Овчинникова Анастасия</td><td>Ориента-Кунцево</td><td>IIю</td><td>1021</td><td>2005</td><td>00:49:16</td><td>+23:32</td><td>13 </td></tr><tr><td>14</td><td>Иванова Полина</td><td>Ориента-Восток</td><td>IIю</td><td>1003</td><td>2005</td><td>01:20:25</td><td>+54:41</td><td>14 </td></tr><tr><td>15</td><td>Деришева Елена</td><td>Искатель</td><td>IIю</td><td>1016</td><td>2006</td><td>01:22:36</td><td>+56:52</td><td>15 </td></tr><tr><td>16</td><td>Алексеева Алиса</td><td>Искатель</td><td>IIю</td><td>1004</td><td>2006</td><td>01:34:56</td><td>+09:12</td><td>16 </td></tr></tbody></table>
-
-<h3>Header</h3><ul>
-  <li>To do 1</li><li>To do 2</li>
+<h2>Чемпионат и Первенство г.Москвы, лыжная гонка – лонг (65 / 75 мин)</h2>
+<h3>Цели и задачи</h3>
+<p>Развитие и популяризация спортивного ориентирования, как массово- оздоровительного и развивающего вида спорта среди всех слоев населения; выявление сильнейших спортсменов г.Москвы, развитие и укрепление спортивных и дружеских связей.</p>
+<h3>Орг.комитет соревнований </h3>
+<ul>
+   <li>Главный судья – Елена Хельдерт (С1К), lenahel@mail.ru </li>
+   <li>Зам. по СТО – Олег Калинин (С1К) </li>
+   <li>Главный секретарь - Екатерина Филимонова (С1К) </li>
+   <li>Судья финиша – Павел Тёмкин (С1К)</li>
 </ul>
-<ol>
-  <li>To do 1</li><li>To do 2</li>
-</ol>
-
+<h3>Сроки и место проведения</h3>
+<p>19 февраля 2017 г. (воскресенье) – л/п Ромашково. Размещение участников на стадионе «Медик» (ул. Маршала Тимошенко, д.1)</p>
+<p></p>
+<figure><img src="image.jpg"></figure>
+<p>Район соревнований <strong>ЗАКРЫТ</strong> для тренировок с картами до 19 февраля!</p>
+<h3>Участники соревнований</h3>
+<ul>
+   <li>М12А (2005-2006г.г.), </li>
+   <li>М14 (2003-2004г.г.), </li>
+   <li>М17 (2000-2002г.г.), </li>
+   <li>М20 (1997-1999г.г.), </li>
+   <li>М21 (1996г. и старше – МС, КМС, 1р.) </li>
+   <li>Ж12А (2005-2006г.г.), </li>
+   <li>Ж14 (2003-2004г.г.), </li>
+   <li>Ж17 (2000-2002г.г.), </li>
+   <li>Ж20 (1997-1999г.г.), </li>
+   <li>Ж21(1996г. и старше – МС, КМС, 1р.) </li>
+   <li>М12Б и Ж12Б (2007г. и младше, начинающие 2005-2006г.), </li>
+   <li>О1, О2 (открытые группы). </li>
+</ul>
+<p>Допускаются иногородние участники, которые не участвуют в розыгрыше медалей ЧиП г.Москвы.</p>
+<p>Чемпионат г.Москвы проводится среди участников групп М21 и Ж21 согласно Положению о Чемпионате г.Москвы по спортивному ориентированию на лыжах 2017г. Участники групп МЖ12–20 участвуют в зачёте Первенства г.Москвы согласно Положению о Первенстве г.Москвы по спортивному ориентированию на лыжах 2017г. Ответственность за безопасность и сохранность жизни и здоровья участников в лесу (на дистанции) и во время соревнований (до старта и после финиша) возлагается на представителей команд, тренеров, самих участников. Участники соревнований до 20 лет включительно допускаются только при наличии допуска врача. </p>
+<h3>Программа соревнований </h3>
 <figure>
-  <img src="image.jpg" />
-  <figcaption>Caption</figcaption>
+   <table>
+      <tbody>
+         <tr>
+            <th></th>
+            <th></th>
+         </tr>
+         <tr>
+            <td>09:00</td>
+            <td>Начало работы секретариата </td>
+         </tr>
+         <tr>
+            <td>11:00</td>
+            <td>Начало старта Чемпионата и Первенства Москвы </td>
+         </tr>
+         <tr>
+            <td>11:30-13:30</td>
+            <td>Свободный старт открытых групп </td>
+         </tr>
+         <tr>
+            <td>14:00</td>
+            <td>Начало награждения на Медике (по мере формирования окончательных протоколов)</td>
+         </tr>
+      </tbody>
+   </table>
 </figure>
-<div></div>
-
-<figure>
-  <img src="image2.jpg" />
-  <figcaption>Caption 2</figcaption>
-</figure>
-
-<div></div>
+<p></p>
+<h3>Спортивно-техническая информация</h3>
+<p>Местность среднепересеченная, перепад на склоне до 50 м. Трассы подготовлены снегоходами с бороной. В районе соревнований есть стационарная лыжная трасса протяженностью 17 км. Процентное соотношение лыжней: Скоростная - 35% Быстрая - 65% Карта зимняя, масштаб в таблице, сечение рельефа 2,5м, не герметизирована. У групп М21 и М20 - переворот карты (не в месте старта), последний КП первого круга на карте второго круга обозначен знаком старта, нумерация сквозная. Остальные дистанции в один круг. Нумерация КП у всех групп двойная. Опасные места – лыжная трасса, крутые спуски на ней. Для удобства понимания направления движения по лыжной трассе будет использован специальный знак поверх знака лыжной трассы – красные стрелочки. Чтению карты он не мешает.</p>
 `;
 //
 // import { convertToHTML, convertFromHTML } from 'draft-convert';

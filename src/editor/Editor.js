@@ -44,7 +44,7 @@ import sampleMarkup from "./sampleMarkup";
 
 // import Instagram from 'react-instagram-embed';
 // import Media from './Media';
-import MediaBlockEditor from './MediaBlockEditor';
+import AtomicBlockEditor from './AtomicBlockEditor';
 // import HTMLEditor from './HTMLEditor';
 import LinkEditor from './LinkEditor';
 import AddButton from './AddButton';
@@ -129,22 +129,22 @@ class RichEditor extends Component {
    */
 
   handleReadOnly = (e) => {
-    setTimeout(() => {
-
-      /* this allows atomic block editors to control readOnly too
-       * since selection is collapsed when you choose an atomic block
-       */
-
-      const selectionIsCollapsed =
-        this.state.editorState
-        .getSelection()
-        .isCollapsed()
-        ;
-
-      if (this.state.readOnly && !selectionIsCollapsed) {
-        this.setState({ readOnly: false });
-      }
-    }, 0);
+    // setTimeout(() => {
+    //
+    //   /* this allows atomic block editors to control readOnly too
+    //    * since selection is collapsed when you choose an atomic block
+    //    */
+    //
+    //   const selectionIsCollapsed =
+    //     this.state.editorState
+    //     .getSelection()
+    //     .isCollapsed()
+    //     ;
+    //
+    //   if (this.state.readOnly && !selectionIsCollapsed) {
+    //     this.setState({ readOnly: false });
+    //   }
+    // }, 0);
   }
 
   createDecorator = () => new CompositeDecorator([
@@ -201,7 +201,7 @@ class RichEditor extends Component {
     const type = contentBlock.getType();
     if (type === 'atomic') {
       return {
-        component: MediaBlockEditor,
+        component: AtomicBlockEditor,
         editable: false,
         props: {
           editor: this,
@@ -214,6 +214,9 @@ class RichEditor extends Component {
             });
           },
           onDragEnd: () => {
+            const key = contentBlock.getEntityAt(0);
+            const entity = this.state.editorState.getCurrentContent().getEntity(key);
+            if (entity.getType() === 'PHOTO') return;
             console.log('DROPPED');
             this.handleDrop(this.state.editorState.getSelection());
           }
@@ -221,11 +224,11 @@ class RichEditor extends Component {
       };
     }
 
-    if (type === 'unstyled') {
-      return {
-
-      }
-    }
+    // if (type === 'unstyled') {
+    //   return {
+    //
+    //   }
+    // }
   }
 
   getSelectedBlockElement = () => {
@@ -321,7 +324,7 @@ class RichEditor extends Component {
     if (selectionRect.width > 0 && currentBlockType !== 'atomic') {
       return this.setState({
         toolbarStyle: getToolbarStyle(selectionRect, this.toolbar),
-        readOnly: true,
+        // readOnly: true,
         linkEditorStyle: {
           visibility: 'hidden'
         },
@@ -336,7 +339,7 @@ class RichEditor extends Component {
       )
     ) {
       this.setState({
-        readOnly: false,
+        // readOnly: false,
         toolbarStyle: {
           visibility: 'hidden'
         },
