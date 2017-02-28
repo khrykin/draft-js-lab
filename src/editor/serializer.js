@@ -57,7 +57,7 @@ function toHTML(editorState) {
      }
 
      if (entity.type === 'TABLE') {
-        return CSVToHTML(entity.data.content);
+        return CSVToHTML(entity.data.content) + captionHTML;
      }
 
      return originalText;
@@ -92,6 +92,15 @@ function fromHTML(html) {
         const mediaEl = node.children[0];
         const src = mediaEl.getAttribute('src');
         const caption = node.children[1] && node.children[1].innerText;
+
+        if (mediaEl instanceof HTMLTableElement) {
+          return Entity.create(
+            'TABLE',
+            'IMMUTABLE',
+            { content: HTMLToCSV(`<table>${node.innerHTML}</table>`), caption }
+          )
+        }
+
         let type = 'PHOTO';
         if (mediaEl instanceof HTMLImageElement) {
           type = 'PHOTO'
@@ -106,14 +115,6 @@ function fromHTML(html) {
           type,
           'IMMUTABLE',
           { src, caption }
-        )
-      }
-
-      if (nodeName === 'table') {
-        return Entity.create(
-          'TABLE',
-          'IMMUTABLE',
-          { content: HTMLToCSV(`<table>${node.innerHTML}</table>`) }
         )
       }
     },

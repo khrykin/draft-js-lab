@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Instagram from 'react-instagram-embed';
 import TableEditor, { CSVToHTML } from './TableEditor';
 import Button from './Button';
+
 export default class Media extends Component {
   static defaultProps = {
     onChange() {},
@@ -10,6 +11,8 @@ export default class Media extends Component {
   };
 
   state = {};
+
+
 
   handleKeyPress = e => {
     if (e.key === 'Enter') {
@@ -20,72 +23,44 @@ export default class Media extends Component {
     }
   }
 
-  onFieldChange = name => e => {
-    e.preventDefault();
-    const { value } = e.target;
-    this.props.onChange({ [name]: value });
-  }
 
-  toggleShowURL = e => {
-    e.preventDefault();
-    this.setState({ showURL: !this.state.showURL }, () => {
-      if (this.state.showURL) {
-        this.props.onFocus();
-      }
-    });
-  }
 
-  Figure = ({ children }) => {
-    const { data } = this.props;
-    return (
-      <div className="relative dib">
-        <Toolbar>
-          <Button
-            onClick={this.toggleShowURL}
-            >
-            URL
-          </Button>
-          { this.state.showURL && (
-            <input
-              type="text"
-              value={data.src}
-              onKeyPress={this.handleKeyPress}
-              onChange={this.onFieldChange('src')}
-              />
-          )}
-        </Toolbar>
-        { children }
-      </div>
-    );
-  }
+
 
   render() {
-    const { data, type } = this.props;
+    const { data, type, focused } = this.props;
 
     if (type === 'TABLE') {
       return (
-        <span>
-          <div dangerouslySetInnerHTML={{__html: CSVToHTML(data.content) }} />
-          <a href="" onClick={this.props.onFocus}>Edit</a>
-        </span>
+        <TableEditor
+          focused={focused}
+          data={data}
+          onChange={this.props.onChange}
+          />
       );
     }
 
     if (type === 'PHOTO')
       return (
-        <this.Figure>
+        <MediaEditor
+          focused={focused}
+          data={data}
+          onChange={this.props.onChange}>
           <img alt={data.src} src={data.src} />
-        </this.Figure>
+        </MediaEditor>
       );
 
     if (type === 'YOUTUBE')
       return (
-        <this.Figure>
+        <MediaEditor
+          focused={focused}
+          data={data}
+          onChange={this.props.onChange}>
           <iframe
             src={data.src}
             frameBorder="0"
             allowFullScreen />
-        </this.Figure>
+        </MediaEditor>
       );
 
     if (type === 'INSTAGRAM')
@@ -102,3 +77,61 @@ function Toolbar({ children }) {
     <div className="pa2 bg-black-30 white absolute w-100 tl">{ children }</div>
   );
 }
+
+class MediaEditor extends Component {
+  componentWillReceiveProps(nextProps) {
+    if (this.state.showURL && !nextProps.focused) {
+      this.setState({ showURL: false });
+    }
+  }
+
+  toggleShowURL = e => {
+    e.preventDefault();
+    this.setState({ showURL: !this.state.showURL });
+  }
+
+  onFieldChange = name => e => {
+    e.preventDefault();
+    const { value } = e.target;
+    this.props.onChange({
+      ...this.props.data,
+      [name]: value
+    });
+  }
+
+  state = {
+    showURL: false
+  }
+
+  render() {
+    const { data } = this.props;
+    return (
+      <div className="relative dib">
+        <Toolbar>
+          <Button
+            onClick={this.toggleShowURL}
+            >
+            URL
+          </Button>
+          { (this.state.showURL) && (
+            <input
+              type="text"
+              value={data.src}
+              onKeyPress={this.handleKeyPress}
+              onChange={this.onFieldChange('src')}
+              />
+          )}
+        </Toolbar>
+        { this.props.children }
+      </div>
+    );
+  }
+}
+
+// class TableEditor extends Component {
+//   render() {
+//     return (
+//       <div>Table Editor</div>
+//     );
+//   }
+// }

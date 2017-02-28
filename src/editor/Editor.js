@@ -218,6 +218,9 @@ class RichEditor extends Component {
             const entity = this.state.editorState.getCurrentContent().getEntity(key);
             if (entity.getType() === 'PHOTO') return;
             console.log('DROPPED');
+            this.setState({
+              readOnly: false
+            });
             this.handleDrop(this.state.editorState.getSelection());
           }
         },

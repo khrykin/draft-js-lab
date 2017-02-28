@@ -6,6 +6,7 @@ import TableEditor, { CSVToHTML } from './TableEditor';
 
 export default class MediaBlockEditor extends Component {
 
+
   constructor(props) {
     super(props);
     const key = props.block.getEntityAt(0);
@@ -13,12 +14,70 @@ export default class MediaBlockEditor extends Component {
     const entity = contentState.getEntity(key);
     const data = entity.getData();
 
-    this.state = { data };
+    this.state = {
+      data,
+      focused: false,
+      editCaption: false
+    };
   }
+
+  componentWillReceiveProps(nextProps) {
+    console.log('this.state.editCaption', this.state.editCaption);
+    console.log('!nextProps.focused', !nextProps.focused);
+
+    if (this.state.editCaption && !nextProps.focused) {
+      console.log('LOOSE CAPTION')
+      this.setState({ editCaption: false });
+    }
+  }
+
+  componentDidMount() {
+    window.addEventListener('click', this.handleClick);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('click', this.handleClick);
+  }
+
+  handleClick = (e) => {
+    if (!this.DOMNode.contains(e.target)) {
+      /* Click outside */
+
+      if (this.state.focused) {
+        this.looseFocus();
+      }
+    } else {
+      /* Click inside */
+
+      if (!this.state.focused) {
+        this.setFocus();
+      }
+    }
+  }
+
+  setFocus = () => {
+    const { editor } = this.props.blockProps;
+    editor.setState({ readOnly: true }, () => {
+      this.setState({ focused: true });
+    });
+  }
+
+  looseFocus = () => {
+    const { editor } = this.props.blockProps;
+    editor.setState({ readOnly: false }, () => {
+      this.setState({ focused: false, editCaption: false });
+    });
+
+    const key = this.props.block.getEntityAt(0);
+    editor.replaceEntityData(key, this.state.data);
+  }
+
 
   handleCaptionKeyPress = e => {
     if (e.key === 'Enter') {
-      this.save();
+      this.setState({ editCaption: false }, () => {
+        this.save();
+      });
     }
   }
 
@@ -46,53 +105,31 @@ export default class MediaBlockEditor extends Component {
     this.setState({ [name]: value });
   }
 
-  blockEditor = () => {
-    const { editor } = this.props.blockProps;
-    editor.setState({ readOnly: true });
-  }
-
-  unblockEditor = () => {
-    const { editor } = this.props.blockProps;
-    editor.setState({ readOnly: false }, () => {
-      const key = this.props.block.getEntityAt(0);
-      editor.replaceEntityData(key, this.state.data);
-    });
-  }
-
   delete = e => {
     e.preventDefault();
     const { editor } = this.props.blockProps;
     editor.setState({ readOnly: false }, () => {
-
-      const newEditorState = removeBlock(editor.state.editorState, this.props.block.key);
-
+      const { editorState } = editor.state;
+      const newEditorState = removeBlock(editorState, this.props.block.key);
       editor.onChange(newEditorState);
     });
   }
 
-  edit = e => {
+  editCaption = e => {
     e && e.preventDefault();
-    const { editor } = this.props.blockProps;
-    this.setState({ edit: true }, () => {
-      editor.setState({ readOnly: true });
-    });
+    // const { editor } = this.props.blockProps;
+    this.setState({ editCaption: true });
+    // console.log('EDIT');
+    // this.setState({ focused: true, editCaption: true }, () => {
+    //   editor.setState({ readOnly: true });
+    // });
   }
 
   save = e => {
-
-    if (e) {
-      e.preventDefault();
-    }
-
+    e && e.preventDefault();
     const { editor } = this.props.blockProps;
-    this.setState({ edit: false }, () => {
-      editor.setState({ readOnly: false });
-    });
-    const key = this.props.block.getEntityAt(0);
-    editor.replaceEntityData(key, this.state.data);
+    this.looseFocus();
   }
-
-
 
   render() {
     const key = this.props.block.getEntityAt(0);
@@ -132,9 +169,11 @@ export default class MediaBlockEditor extends Component {
     return (
       <div
         className="relative"
-        draggable
+        draggable={!this.state.focused}
+        ref={n => this.DOMNode = n}
         onDragStart={this.props.blockProps.onDragStart}
         onDragEnd={this.props.blockProps.onDragEnd}
+        style={this.state.focused ? { border: '2px solid blue' } : {}}
         >
         <a
           href=""
@@ -145,12 +184,13 @@ export default class MediaBlockEditor extends Component {
         <Media
           type={type}
           data={this.state.data}
+          focused={this.state.focused}
           onChange={this.onMediaDataChange}
           onFocus={this.blockEditor}
           onBlur={this.unblockEditor}
           />
         <figcaption>
-          { this.state.edit ? (
+          { this.state.editCaption ? (
             <span>
               <input
                 type="text"
@@ -160,7 +200,7 @@ export default class MediaBlockEditor extends Component {
                 />
             </span>
           ) : (
-            <span onClick={this.edit}>
+            <span onClick={this.editCaption}>
               { this.state.data.caption || 'Подпись...'}
             </span>
           ) }

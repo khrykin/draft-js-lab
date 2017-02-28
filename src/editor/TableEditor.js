@@ -6,17 +6,51 @@ export default class TableEditor extends Component {
     onChange() {}
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (this.state.isEditing && !nextProps.focused) {
+      this.setState({ isEditing: false });
+    }
+  }
+
+  toggleIsEditing = e => {
+    e && e.preventDefault();
+    this.setState({ isEditing: !this.state.isEditing });
+  }
+
+
+  state = {
+    isEditing: false
+  }
+
   change = e => {
     const { value } = e.target;
-    this.props.onChange(value);
+    this.props.onChange({
+      ...this.props.data,
+      content: value
+    });
   }
 
   render() {
+    const { isEditing } = this.state;
+    const { data } = this.props;
     return (
-        <textarea
-          className="code"
-          value={this.props.value}
-          onChange={this.change} />
+      <div>
+        { isEditing ? (
+          <textarea
+            className="code"
+            value={data.content}
+            onChange={this.change} />
+        ) : (
+          <span>
+            <div dangerouslySetInnerHTML={{__html: CSVToHTML(data.content)}} />
+            <a href=""
+              onClick={this.toggleIsEditing}
+              >
+              Edit
+            </a>
+          </span>
+        )}
+      </div>
     );
   }
 }
