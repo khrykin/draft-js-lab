@@ -14,6 +14,9 @@ function toHTML(editorState) {
       if (style === 'BOLD') {
         return <strong />;
       }
+      if (style === 'SMALL') {
+        return <small />;
+      }
     },
     blockToHTML(block) {
       if (block.type === 'atomic') {
@@ -81,8 +84,12 @@ function fromHTML(html) {
   html = html.replace(/\n\s*/g, '');
   return convertFromHTML({
     htmlToStyle(nodeName, node, currentStyle) {
-      // if (nodeName === 'strong') {
-      //   return currentStyle.add('BOLD');
+      if (nodeName === 'strong') {
+        return currentStyle.add('BOLD');
+      }
+      if (nodeName === 'small') {
+        return currentStyle.add('SMALL');
+      }
       // } else {
         return currentStyle;
       // }

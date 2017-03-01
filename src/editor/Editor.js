@@ -101,6 +101,12 @@ const blockRenderMap = Map({
   // }
 });
 
+const styleMap  = {
+  'SMALL': {
+    fontSize: '80%',
+  },
+};
+
 const extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(blockRenderMap);
 
 
@@ -712,6 +718,12 @@ class RichEditor extends Component {
         </Button>
         <Button
           className=""
+          active={this.selectionHasInlineStyle('SMALL')}
+          onClick={this.toggleStyle('SMALL')}>
+          sm
+        </Button>
+        <Button
+          className=""
           onClick={this.addLink}>
           <i className="fa fa-link"/>
         </Button>
@@ -752,6 +764,7 @@ class RichEditor extends Component {
             handleDrop={this.handleDrop}
             blockRendererFn={this.blockRenderer}
             blockRenderMap={extendedBlockRenderMap}
+            customStyleMap={styleMap}
             readOnly={this.state.readOnly}
             onTab={this.onTab}
             onChange={this.onChange} />
