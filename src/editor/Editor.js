@@ -309,6 +309,7 @@ class RichEditor extends Component {
     );
 
     if (linkIsSelected) {
+      console.log('LINK SELECTED')
       console.log('this.linkEditor', this.linkEditor);
       return this.setState({
         linkEditorStyle: getToolbarStyle(selectionRect, this.linkEditor),
@@ -413,7 +414,8 @@ class RichEditor extends Component {
   }
 
   replaceEntityData = (key, data) => {
-    const contentState = this.state.editorState.getCurrentContent();
+    const { editorState } = this.state;
+    const contentState = editorState.getCurrentContent();
     contentState.replaceEntityData(key, data);
   }
 
@@ -437,7 +439,9 @@ class RichEditor extends Component {
     );
   }
 
-  addLink = () => {
+  addLink = (e) => {
+    e && e.preventDefault();
+    
     const { editorState } = this.state;
     const contentState = editorState.getCurrentContent();
 
@@ -447,16 +451,19 @@ class RichEditor extends Component {
       });
 
     const key = contentStateWithEntity.getLastCreatedEntityKey();
-
-    this.onChange(
-      RichUtils.toggleLink(
-        editorState,
-        editorState.getSelection(),
-        key
-      ), () => {
-        this.setState({ readOnly: false });
-      }
+    const currentSelection = editorState.getSelection();
+    const editorStateWithLink = RichUtils.toggleLink(
+      editorState,
+      currentSelection,
+      key
     );
+
+    const editorStateWithForcedSelection = EditorState.forceSelection(
+      editorStateWithLink,
+      currentSelection
+    );
+
+    this.onChange(editorStateWithForcedSelection);
   }
 
   removeLink = () => {
@@ -488,9 +495,7 @@ class RichEditor extends Component {
         ' '
       );
 
-      this.onChange(
-        stateWithAtomicBlock
-      );
+      this.onChange(stateWithAtomicBlock);
     }
   }
 

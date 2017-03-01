@@ -14,14 +14,7 @@ export default class Media extends Component {
 
 
 
-  handleKeyPress = e => {
-    if (e.key === 'Enter') {
-      console.log('SAVE');
-      this.setState({ showURL: false }, () => {
-        this.props.onBlur();
-      });
-    }
-  }
+
 
 
 
@@ -81,6 +74,13 @@ function Toolbar({ children }) {
 class MediaEditor extends Component {
   componentWillReceiveProps(nextProps) {
     if (this.state.showURL && !nextProps.focused) {
+      this.setState({ showURL: false });
+    }
+  }
+
+  handleKeyPress = e => {
+    if (e.key === 'Enter') {
+      console.log('SAVE');
       this.setState({ showURL: false });
     }
   }

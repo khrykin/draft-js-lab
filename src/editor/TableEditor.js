@@ -14,7 +14,7 @@ export default class TableEditor extends Component {
 
   toggleIsEditing = e => {
     e && e.preventDefault();
-    this.setState({ isEditing: !this.state.isEditing });
+    this.setState({ isEditing: true });
   }
 
 
