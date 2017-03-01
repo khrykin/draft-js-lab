@@ -32,7 +32,7 @@ export default class AttachmentEditor extends Component {
         className="absolute pa1 dt bg-black white shadow-4 white br2 z-index-3"
         style={this.props.style}>
         <div className="dtc">
-          { data.filename }
+          <a className="white" target="__blank" href={data.href}>{ data.filename }</a>
         </div>
         <div className="dtc w2">
         <Button

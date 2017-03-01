@@ -244,13 +244,23 @@ class RichEditor extends Component {
       left = TOOLBAR_SIDE_MARGIN;
     }
 
-    const top =
-      // selectedDOMNodeRect.top
-      + document.body.scrollTop
-      + selectionRect.top
-      // + selectedDOMNodeRect.height
-      // - addButtonRect.height / 2
-      ;
+    const selectionTop =
+      document.body.scrollTop
+    + selectionRect.top
+    ;
+
+    const blockBottom =
+      selectedDOMNodeRect.top
+    + document.body.scrollTop
+    + selectedDOMNodeRect.height
+    - this.addButton.offsetHeight / 2
+    ;
+
+    let top = selectionTop;
+
+    if (!selectionTop) {
+      top = blockBottom;
+    }
 
     this.setState({
       addButtonStyle: {

@@ -12,14 +12,6 @@ export default class Media extends Component {
 
   state = {};
 
-
-
-
-
-
-
-
-
   render() {
     const { data, type, focused } = this.props;
 
@@ -80,8 +72,8 @@ class MediaEditor extends Component {
 
   handleKeyPress = e => {
     if (e.key === 'Enter') {
-      console.log('SAVE');
       this.setState({ showURL: false });
+      // this.props.onBlur();
     }
   }
 

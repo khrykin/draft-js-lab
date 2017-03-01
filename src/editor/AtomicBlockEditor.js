@@ -127,7 +127,6 @@ export default class MediaBlockEditor extends Component {
 
   save = e => {
     e && e.preventDefault();
-    const { editor } = this.props.blockProps;
     this.looseFocus();
   }
 
@@ -187,7 +186,7 @@ export default class MediaBlockEditor extends Component {
           focused={this.state.focused}
           onChange={this.onMediaDataChange}
           onFocus={this.blockEditor}
-          onBlur={this.unblockEditor}
+          onBlur={this.save}
           />
         <figcaption>
           { this.state.editCaption ? (
