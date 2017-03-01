@@ -4,6 +4,8 @@ import {
   Editor,
   EditorState,
   RichUtils,
+  Modifier,
+  SelectionState,
   CompositeDecorator,
   getVisibleSelectionRect,
   DefaultDraftBlockRenderMap,
@@ -47,13 +49,15 @@ import sampleMarkup from "./sampleMarkup";
 import AtomicBlockEditor from './AtomicBlockEditor';
 // import HTMLEditor from './HTMLEditor';
 import LinkEditor from './LinkEditor';
+import AttachmentEditor from './AttachmentEditor';
 import AddButton from './AddButton';
-import Button from './Button';
+import Button, { UploadButton } from './Button';
 
 import {
   HashTag,
   Link,
   URLLink,
+  Attachment
   // Image,
 } from './EntitiesWrappers';
 
@@ -62,7 +66,7 @@ const TOOLBAR_SIDE_MARGIN = 15;
 
 
 function getToolbarStyle(selectionRect, toolbar) {
-  // console.log(selectionRect, toolbar);
+
   let left = selectionRect.left
     + selectionRect.width / 2
     - toolbar.offsetWidth / 2;
@@ -79,17 +83,6 @@ function getToolbarStyle(selectionRect, toolbar) {
   if (top < 2 * TOOLBAR_BOTTOM_MARGIN + document.body.scrollTop) {
     top = 2 * TOOLBAR_BOTTOM_MARGIN + document.body.scrollTop;
   }
-
-  // console.log('toolbar.offsetWidth', toolbar.offsetWidth);
-  // console.log('toolbar.offsetHeight', toolbar.offsetHeight);
-  // console.log('selectionRect.top', selectionRect.top);
-  // console.log('document.body.scrollTop', document.body.scrollTop);
-  //
-  // console.log("TOOLBAR_POSITION", {
-  //   left,
-  //   top,
-  //   visibility: 'visible'
-  // });
 
   return {
     left,
@@ -123,34 +116,15 @@ class RichEditor extends Component {
     window.removeEventListener('click', this.handleReadOnly);
   }
 
-  /**
-   * Removes readOnly set by toolbars in order to preserve selction state
-   * of editor
-   */
-
-  handleReadOnly = (e) => {
-    // setTimeout(() => {
-    //
-    //   /* this allows atomic block editors to control readOnly too
-    //    * since selection is collapsed when you choose an atomic block
-    //    */
-    //
-    //   const selectionIsCollapsed =
-    //     this.state.editorState
-    //     .getSelection()
-    //     .isCollapsed()
-    //     ;
-    //
-    //   if (this.state.readOnly && !selectionIsCollapsed) {
-    //     this.setState({ readOnly: false });
-    //   }
-    // }, 0);
-  }
 
   createDecorator = () => new CompositeDecorator([
     {
       strategy: findEntities('LINK'),
       component: Link,
+    },
+    {
+      strategy: findEntities('ATTACHMENT'),
+      component: Attachment,
     },
     {
       strategy: findURLs,
@@ -164,18 +138,18 @@ class RichEditor extends Component {
 
   state = {
     editorState: EditorState.createWithContent(intialState, this.createDecorator()),
+    // toolbarStyle: {
+    //   visibility: 'hidden'
+    // },
+    // linkEditorStyle: {
+    //   visibility: 'hidden'
+    // },
+    toolbar: null,
     toolbarStyle: {
-      visibility: 'hidden'
-    },
-    linkEditorStyle: {
       visibility: 'hidden'
     },
     readOnly: false
   };
-
-  componentDidUpdate(_, prevState) {
-
-  }
 
   onChange = (editorState, cb = () => {}) => {
     // const selectionRect = getVisibleSelectionRect(window) || {};
@@ -226,12 +200,6 @@ class RichEditor extends Component {
         },
       };
     }
-
-    // if (type === 'unstyled') {
-    //   return {
-    //
-    //   }
-    // }
   }
 
   getSelectedBlockElement = () => {
@@ -260,6 +228,7 @@ class RichEditor extends Component {
   setAddButtonPosition = () => {
     const editorRect = this.editorWrapper.getBoundingClientRect();
     const selectedDOMNode = this.getSelectedBlockElement();
+    const selectionRect = this.getSelectionRect();
 
     if (!selectedDOMNode) return;
 
@@ -275,10 +244,12 @@ class RichEditor extends Component {
       left = TOOLBAR_SIDE_MARGIN;
     }
 
-    const top =  selectedDOMNodeRect.top
+    const top =
+      // selectedDOMNodeRect.top
       + document.body.scrollTop
-      + selectedDOMNodeRect.height
-      - addButtonRect.height / 2
+      + selectionRect.top
+      // + selectedDOMNodeRect.height
+      // - addButtonRect.height / 2
       ;
 
     this.setState({
@@ -299,25 +270,30 @@ class RichEditor extends Component {
     const currentEntity = this.getCurrentEntity();
     const selectionRect = this.getSelectionRect();
 
-    console.log('selectionRect', selectionRect);
 
     const linkIsSelected = (
       !selectionIsCollapsed &&
       currentEntity &&
-      currentEntity.type === 'LINK' &&
-      this.state.linkEditorStyle.visibility !== 'visible'
+      currentEntity.type === 'LINK'
     );
 
+    const attachmentIsSelected = (
+      !selectionIsCollapsed &&
+      currentEntity &&
+      currentEntity.type === 'ATTACHMENT'
+    )
+
     if (linkIsSelected) {
-      console.log('LINK SELECTED')
-      console.log('this.linkEditor', this.linkEditor);
       return this.setState({
-        linkEditorStyle: getToolbarStyle(selectionRect, this.linkEditor),
-        toolbarStyle: {
-          visibility: 'hidden'
-        },
-      }, () => {
-        // setTimeout(() => this.linkEditorInput.focus(), 0);
+        toolbarStyle: getToolbarStyle(selectionRect, this.linkEditor),
+        toolbar: 'linkEditor'
+      });
+    }
+
+    if (attachmentIsSelected) {
+      return this.setState({
+        toolbarStyle: getToolbarStyle(selectionRect, this.attachmentEditor),
+        toolbar: 'attachmentEditor'
       });
     }
 
@@ -328,28 +304,21 @@ class RichEditor extends Component {
     if (selectionRect.width > 0 && currentBlockType !== 'atomic') {
       return this.setState({
         toolbarStyle: getToolbarStyle(selectionRect, this.toolbar),
-        // readOnly: true,
-        linkEditorStyle: {
-          visibility: 'hidden'
-        },
+        toolbar: 'toolbar'
       });
     }
 
     if (
       selectionIsCollapsed &&
       (
-        this.state.toolbarStyle.visibility === 'visible' ||
-        this.state.linkEditorStyle.visibility === 'visible'
+        this.state.toolbarStyle.visibility === 'visible'
       )
     ) {
       this.setState({
-        // readOnly: false,
         toolbarStyle: {
           visibility: 'hidden'
         },
-        linkEditorStyle: {
-          visibility: 'hidden'
-        }
+        toolbar: null
       });
     }
   }
@@ -404,19 +373,29 @@ class RichEditor extends Component {
   }
 
   setEntityData = data => {
-    const {
-      editorState
-    } = this.state;
+    const { editorState } = this.state;
 
     const currentEntityKey = getSelectionEntity(editorState);
-    const contentState = editorState.getCurrentContent();
-    contentState.replaceEntityData(currentEntityKey, data);
+    this.replaceEntityData(currentEntityKey, data);
   }
 
   replaceEntityData = (key, data) => {
     const { editorState } = this.state;
     const contentState = editorState.getCurrentContent();
-    contentState.replaceEntityData(key, data);
+    const contentStateWithEntity = contentState.replaceEntityData(key, data);
+    const editorStateWithEntity = EditorState.push(
+      editorState,
+      contentStateWithEntity,
+      'apply-entity'
+    );
+
+    /* This is currently needed to trigger re-render */
+    const editorStateWithForcedSelection = EditorState.forceSelection(
+      editorStateWithEntity,
+      editorStateWithEntity.getSelection()
+    );
+
+    this.onChange(editorStateWithForcedSelection);
   }
 
   toggleBlockType = type => () => {
@@ -439,9 +418,8 @@ class RichEditor extends Component {
     );
   }
 
-  addLink = (e) => {
-    e && e.preventDefault();
-    
+  addLink = () => {
+
     const { editorState } = this.state;
     const contentState = editorState.getCurrentContent();
 
@@ -468,12 +446,53 @@ class RichEditor extends Component {
 
   removeLink = () => {
     const { editorState } = this.state;
-    const selection = editorState.getSelection();
-    if (!selection.isCollapsed()) {
-      return this.onChange(
-        RichUtils.toggleLink(editorState, selection, null),
-        this.closeLinkEditor()
-      );
+    const currentSelection = editorState.getSelection();
+
+    const editorStateWithoutLink = RichUtils.toggleLink(
+      editorState,
+      currentSelection,
+      null
+    );
+
+    const collapsedSelection = collapseSelectionToTheEnd(editorStateWithoutLink);
+
+    const editorStateWithForcedSelection = EditorState.forceSelection(
+      editorStateWithoutLink,
+      collapsedSelection
+    );
+
+    if (!currentSelection.isCollapsed()) {
+      return this.onChange(editorStateWithForcedSelection);
+    }
+  }
+
+  removeCurrentEntity = () => {
+    const { editorState } = this.state;
+    const currentSelection = editorState.getSelection();
+    const contentState = editorState.getCurrentContent();
+
+    const contentStateWithoutEntity = Modifier.applyEntity(
+      contentState,
+      currentSelection,
+      null
+    );
+
+    const editorStateWithoutEntity = EditorState.push(
+      editorState,
+      contentStateWithoutEntity,
+      'apply-entity'
+    );
+
+
+    const collapsedSelection = collapseSelectionToTheEnd(editorStateWithoutEntity);
+
+    const editorStateWithForcedSelection = EditorState.forceSelection(
+      editorStateWithoutEntity,
+      collapsedSelection
+    );
+
+    if (!currentSelection.isCollapsed()) {
+      return this.onChange(editorStateWithForcedSelection);
     }
   }
 
@@ -499,6 +518,53 @@ class RichEditor extends Component {
     }
   }
 
+  saveSelection = () => {
+    const { editorState } = this.state;
+    const selectionState = editorState.getSelection();
+    this.savedSelection = selectionState;
+    const collapsedSelection = collapseSelectionToTheEnd(editorState);
+
+    const editorStateWithForcedSelection = EditorState.forceSelection(
+      editorState,
+      collapsedSelection
+    );
+  }
+
+  insertAttachment = (editorState, selectionState, data) => {
+
+    const contentState = editorState.getCurrentContent();
+
+    const contentStateWithEntity =
+      contentState.createEntity('ATTACHMENT', 'MUTABLE', data);
+
+
+    // const selectionState = editorState.getSelection();
+
+    const key = contentStateWithEntity.getLastCreatedEntityKey();
+
+    const contentStateWithText = Modifier.applyEntity(
+      contentState,
+      selectionState,
+      key
+    );
+
+    const editorStateWithEntity = EditorState.push(
+      editorState,
+      contentStateWithText,
+      'apply-entity'
+    );
+
+    const collapsedSelection = collapseSelectionToTheEnd(editorStateWithEntity);
+
+    const editorStateWithForcedSelection = EditorState.forceSelection(
+      editorStateWithEntity,
+      collapsedSelection
+    );
+
+    this.onChange(editorStateWithForcedSelection);
+    return key;
+  }
+
 
   addPhoto = () => {
     this.addMedia('PHOTO', { src: 'image.jpg' })()
@@ -516,85 +582,154 @@ class RichEditor extends Component {
     this.addMedia('TABLE', { content: 'a  b\nc  d' })()
   }
 
+  addAttachment = (files) => {
+    const file = files[0];
+    if (!file) return;
+    const { editorState } = this.state;
+    const selectionState = editorState.getSelection();
+    /*
+     * fetch()
+     * .then(href => {
+     */
+    // console.log('isCollapsed', this.savedSelection.isCollapsed());
+
+     const entityKey = this.insertAttachment(
+       editorState,
+       selectionState,
+       {
+         href: '',
+         filename: file.name
+       }
+     );
+
+    this.setState({ isWaitingForUpload: true });
+
+    let percentage = 0;
+    let self = this;
+    let ts = setTimeout(function progress() {
+      console.log('Trigger')
+      self.replaceEntityData(entityKey, {
+       href: '',
+       filename: file.name,
+       progress: percentage
+     });
+
+      if (percentage >= 100) return self.replaceEntityData(entityKey, {
+       href: 'ski-o.ru',
+       filename: file.name,
+       progress: 100
+     });
+      percentage += 10;
+      ts = setTimeout(progress, 500)
+    }, 500);
+
+  }
+
   closeLinkEditor = () => {
     const { editorState } = this.state;
     const selectionState = collapseSelectionToTheEnd(editorState);
-    this.onChange(EditorState.forceSelection(editorState, selectionState));
+    const editorStateWithCollapsedSelection =
+    EditorState.forceSelection(editorState, selectionState);
+    this.onChange(editorStateWithCollapsedSelection);
   }
 
   toggleAddMenu = e => {
     this.setState({ showAddMenu: true });
   }
 
+  Toolbar = () => {
+    const { toolbarStyle, toolbar } = this.state;
+    const mainToolbarStyle = toolbar === 'toolbar' ? toolbarStyle : {
+      visibility: 'hidden'
+    };
+    return (
+      <div ref={n => this.toolbar = n}
+        className="absolute pa1 shadow-4 white bg-black white br2 z-index-3"
+        style={mainToolbarStyle}>
+        <Button
+          className="b serif"
+          active={this.selectionHasBlockType('header-two')}
+          onClick={this.toggleBlockType('header-two')}>
+          H1
+        </Button>
+        <Button
+          className="f6 serif"
+          active={this.selectionHasBlockType('header-three')}
+          onClick={this.toggleBlockType('header-three')}>
+          H2
+        </Button>
+        <Button
+          className=""
+          active={this.selectionHasBlockType('unstyled')}
+          onClick={this.toggleBlockType('unstyled')}>
+          <i className="fa fa-paragraph"/>
+        </Button>
+        <Button
+          className=""
+          active={this.selectionHasBlockType('unordered-list-item')}
+          onClick={this.toggleBlockType('unordered-list-item')}>
+          <i className="fa fa-list-ul"/>
+        </Button>
+        <Button
+          className=""
+          active={this.selectionHasBlockType('ordered-list-item')}
+          onClick={this.toggleBlockType('ordered-list-item')}>
+          <i className="fa fa-list-ol"/>
+        </Button>
+        <Button
+          className=""
+          active={this.selectionHasBlockType('blockquote')}
+          onClick={this.toggleBlockType('blockquote')}>
+          <i className="fa fa-quote-left"/>
+        </Button>
+        <Button
+          className=""
+          active={this.selectionHasInlineStyle('BOLD')}
+          onClick={this.toggleStyle('BOLD')}>
+          <i className="fa fa-bold"/>
+        </Button>
+        <Button
+          className=""
+          active={this.selectionHasInlineStyle('ITALIC')}
+          onClick={this.toggleStyle('ITALIC')}>
+          <i className="fa fa-italic"/>
+        </Button>
+        <Button
+          className=""
+          active={this.selectionHasInlineStyle('UNDERLINE')}
+          onClick={this.toggleStyle('UNDERLINE')}>
+          <i className="fa fa-underline"/>
+        </Button>
+        <Button
+          className=""
+          onClick={this.addLink}>
+          <i className="fa fa-link"/>
+        </Button>
+        <UploadButton
+          className=""
+          onClick={this.saveSelection}
+          onChange={this.addAttachment}>
+          <i className="fa fa-paperclip"/>
+        </UploadButton>
+      </div>
+    );
+  }
+
+
   render() {
-    const { toolbarStyle } = this.state;
+    const { toolbarStyle, toolbar } = this.state;
+    const linkEditorStyle = toolbar === 'linkEditor' ? toolbarStyle : {
+      visibility: 'hidden'
+    };
+    const attachmentEditorStyle = toolbar === 'attachmentEditor' ? toolbarStyle : {
+      visibility: 'hidden'
+    };
+
+    const currentEntityData = this.getCurrentEntity() && this.getCurrentEntity().getData();
+
     return (
       <div className="Editor">
-        <div ref={n => this.toolbar = n}
-          className="absolute pa1 shadow-4 white bg-black white br2 z-index-3"
-          style={toolbarStyle}>
-          <Button
-            className="b serif"
-            active={this.selectionHasBlockType('header-two')}
-            onClick={this.toggleBlockType('header-two')}>
-            H1
-          </Button>
-          <Button
-            className="f6 serif"
-            active={this.selectionHasBlockType('header-three')}
-            onClick={this.toggleBlockType('header-three')}>
-            H2
-          </Button>
-          <Button
-            className=""
-            active={this.selectionHasBlockType('unstyled')}
-            onClick={this.toggleBlockType('unstyled')}>
-            <i className="fa fa-paragraph"/>
-          </Button>
-          <Button
-            className=""
-            active={this.selectionHasBlockType('unordered-list-item')}
-            onClick={this.toggleBlockType('unordered-list-item')}>
-            <i className="fa fa-list-ul"/>
-          </Button>
-          <Button
-            className=""
-            active={this.selectionHasBlockType('ordered-list-item')}
-            onClick={this.toggleBlockType('ordered-list-item')}>
-            <i className="fa fa-list-ol"/>
-          </Button>
-          <Button
-            className=""
-            active={this.selectionHasBlockType('blockquote')}
-            onClick={this.toggleBlockType('blockquote')}>
-            <i className="fa fa-quote-left"/>
-          </Button>
-          <Button
-            className=""
-            active={this.selectionHasInlineStyle('BOLD')}
-            onClick={this.toggleStyle('BOLD')}>
-            <i className="fa fa-bold"/>
-          </Button>
-          <Button
-            className=""
-            active={this.selectionHasInlineStyle('ITALIC')}
-            onClick={this.toggleStyle('ITALIC')}>
-            <i className="fa fa-italic"/>
-          </Button>
-          <Button
-            className=""
-            active={this.selectionHasInlineStyle('UNDERLINE')}
-            onClick={this.toggleStyle('UNDERLINE')}>
-            <i className="fa fa-underline"/>
-          </Button>
-          <Button
-            className=""
-            onClick={this.addLink}>
-            <i className="fa fa-link"/>
-          </Button>
-        </div>
-
-
+        <this.Toolbar />
         <div
           ref={n => this.editorWrapper = n}
           className="">
@@ -618,14 +753,22 @@ class RichEditor extends Component {
           addYoutube={this.addYoutube}
           addInstagram={this.addInstagram}
           addHTML={this.addHTML}
+          addAttachment={this.addAttachment}
           />
         <LinkEditor
           DOMNodeRef={n => this.linkEditor = n}
-          inputDOMNodeRef={n => this.linkEditorInput = n}
           addLink={this.addLink}
           removeLink={this.removeLink}
-          href={this.getCurrentEntity() && this.getCurrentEntity().getData().href}
-          style={this.state.linkEditorStyle}
+          data={currentEntityData}
+          style={linkEditorStyle}
+          onChange={this.setEntityData}
+          onClose={this.closeLinkEditor}
+          />
+        <AttachmentEditor
+          DOMNodeRef={n => this.attachmentEditor = n}
+          onRemove={this.removeCurrentEntity}
+          data={currentEntityData}
+          style={attachmentEditorStyle}
           onChange={this.setEntityData}
           onClose={this.closeLinkEditor}
           />

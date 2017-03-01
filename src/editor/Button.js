@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 
 export default function Button({
   onClick,
@@ -20,4 +20,46 @@ export default function Button({
       { children }
     </div>
   );
+}
+
+
+export class UploadButton extends Component {
+  static defaultProps = {
+    onChange() {},
+    onClick() {}
+  }
+
+  delegateUpload = e => {
+    e.preventDefault();
+    console.log('BUTTON CLICKED');
+    this.props.onClick();
+    this.fileInput.click();
+  }
+
+  onUpload = e => {
+    console.log('UPLOAD CHECKED');
+    const { files } = e.target;
+    this.props.onChange(files);
+  }
+
+  render() {
+    const { children, onClick, ...props } = this.props;
+    return (
+      <span>
+        <Button
+          {...props}
+          onClick={this.delegateUpload}>
+
+          { children }
+        </Button>
+        <input
+          ref={n => this.fileInput = n}
+          type="file"
+          name={props.name}
+          onChange={this.onUpload}
+          style={{ display: 'none' }}
+          />
+      </span>
+    );
+  }
 }

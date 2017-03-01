@@ -33,14 +33,25 @@ function toHTML(editorState) {
           </a>
         );
       }
+
+      if (entity.type === 'ATTACHMENT') {
+        return (
+            <a
+              className="Attachment"
+              href={entity.data.href}>
+              { originalText }
+            </a>
+        );
+      }
+
       const { caption, src } = entity.data;
       const captionHTML = caption && caption.length ? `<figcaption>${caption}</figcaption>` : '';
 
-      if (entity.type === 'PHOTO') {
-        return (
-          `<img src="${src}"/>` +
-          captionHTML
-        )
+    if (entity.type === 'PHOTO') {
+      return (
+        `<img src="${src}"/>` +
+        captionHTML
+      )
      }
      if (entity.type === 'YOUTUBE') {
         return (
@@ -78,6 +89,17 @@ function fromHTML(html) {
     },
     htmlToEntity(nodeName, node) {
       if (nodeName === 'a') {
+        if (node.classList.contains('Attachment')) {
+          return Entity.create(
+            'ATTACHMENT',
+            'MUTABLE',
+            {
+              href: node.href,
+              filename: node.href.replace(/^.*[\\\/]/, '')
+            }
+          )
+        }
+
         return Entity.create(
           'LINK',
           'MUTABLE',

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 
 
 export function HashTag(props) {
@@ -33,4 +33,38 @@ export function Image(props) {
   // const entity = Entity.get(props.entityKey);
   // const { src } = entity.getData();
   return <img alt="{src}" src={"image.jpg"} />
+}
+
+const fileInfoStyle = {
+  position: 'absolute',
+  right: 0,
+  bottom: 0
+};
+
+const attachmentStyle = {
+  position: 'relative'
+};
+
+export function Attachment({ children, ...props }) {
+  console.log('Attachment props', props);
+  const { entityKey, contentState } = props;
+  const entity = contentState.getEntity(entityKey);
+  const data = entity.getData();
+  if (!data.href) {
+    return (
+      <span className="Attachment-loading">
+        <strong className="Attachment-loading--info f6">
+          { data.progress } %
+        </strong>
+        <span className="Attachment-loading-blinker">
+        { children }
+        </span>
+      </span>
+    );
+  }
+  return (
+    <a href="">
+      { children }
+    </a>
+  );
 }

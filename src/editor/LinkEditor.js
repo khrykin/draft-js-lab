@@ -5,36 +5,23 @@ import Button from './Button';
 
 export default class LinkEditor extends Component {
   static defaultProps = {
-    href: '',
+    data: {},
     onChange: () => {},
     onClose: () => {}
   }
 
   state = {
-    href: this.props.href || '',
-    blank: this.props.target === '__blank',
+    href: this.props.data.href || '',
+    blank: this.props.data.target === '__blank',
   }
 
-  //
-  // componentDidMount() {
-  //   document.addEventListener('click', this.handleClickOutside, true);
-  // }
-  //
-  // componentWillUnmount() {
-  //   document.removeEventListener('click', this.handleClickOutside, true);
-  // }
-  //
-  // handleClickOutside(e) {
-  //   const domNode = ReactDOM.findDOMNode(this);
-  //   if (!domNode || !domNode.contains(e.target)) {
-  //     this.props.onClose();
-  //   }
-  // }
 
-
+  /* This is neccessary while we switchbetween links, since editor is actually
+   * always mounted
+   */
   componentWillReceiveProps(nextProps) {
-    if (nextProps.href && nextProps.href !== this.state.href) {
-      this.setState({ href: nextProps.href });
+    if (nextProps.data.href && nextProps.data.href !== this.state.href) {
+      this.setState({ href: nextProps.data.href });
     }
   }
 

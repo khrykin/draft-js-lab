@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Button from './Button';
+import Button, { UploadButton } from './Button';
 
 export default class AddButton extends Component {
   state = {
@@ -11,10 +11,11 @@ export default class AddButton extends Component {
   }
 
   delegate = (handler=() => {}) => e => {
-    e.preventDefault();
+    e && e.preventDefault && e.preventDefault();
     this.setState({ show: false });
-    handler();
+    handler(e);
   }
+
 
   render() {
     const { show } = this.state;
@@ -60,11 +61,11 @@ export default class AddButton extends Component {
               </Button>
             </div>
             <div>
-              <Button
+              <UploadButton
                 className=""
-                onClick={this.delegate(this.addAttachment)}>
+                onChange={this.delegate(this.props.addAttachment)}>
                 <i className="fa fa-paperclip"/>
-              </Button>
+              </UploadButton>
             </div>
           </div>
         )}

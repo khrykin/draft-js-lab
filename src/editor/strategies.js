@@ -20,12 +20,12 @@ const HASHTAG_REGEX = /#[A-Za-zА-Яа-я0-9]+/g;
 
 
 export function findEntities(type) {
-  return (contentBlock, callback) => {
+  return (contentBlock, callback, contentState) => {
     contentBlock.findEntityRanges(character => {
         const entityKey = character.getEntity();
         return (
           entityKey !== null &&
-          Entity.get(entityKey).getType() === type
+          contentState.getEntity(entityKey).getType() === type
         );
       },
       callback
