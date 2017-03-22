@@ -230,3 +230,18 @@ export function collapseSelectionToTheEnd(editorState) {
 
   return selectionState;
 }
+
+/**
+ * Returns cross-browser scrollTop
+ */
+
+export function getScrollTop(){
+  if(typeof pageYOffset != 'undefined'){
+    //most browsers except IE before #9
+    return pageYOffset;
+  }
+  const B = document.body; //IE 'quirks'
+  let D = document.documentElement; //IE with doctype
+  D = D.clientHeight ? D: B;
+  return D.scrollTop;
+}

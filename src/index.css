@@ -72,6 +72,14 @@ table {
   border-radius: 2px;
 }
 
+.arrow-bottom::after {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 10px 10px 0 10px;
+  border-color: #007bff transparent transparent transparent;
+}
+
 @keyframes blinker {
   50% { opacity: 0; }
 }

@@ -26,7 +26,8 @@ import {
 
 import {
   collapseSelectionToTheEnd,
-  moveAtomicBlock
+  moveAtomicBlock,
+  getScrollTop
 } from './utils';
 
 
@@ -64,33 +65,35 @@ import {
 const TOOLBAR_BOTTOM_MARGIN = 15;
 const TOOLBAR_SIDE_MARGIN = 15;
 
-
-function getToolbarStyle(selectionRect, toolbar) {
-
-  let left = selectionRect.left
-    + selectionRect.width / 2
-    - toolbar.offsetWidth / 2;
-
-  if (left < TOOLBAR_SIDE_MARGIN) {
-    left = TOOLBAR_SIDE_MARGIN;
-  }
-
-  let top = selectionRect.top
-    - toolbar.offsetHeight
-    - TOOLBAR_BOTTOM_MARGIN
-    + document.body.scrollTop;
-
-  if (top < 2 * TOOLBAR_BOTTOM_MARGIN + document.body.scrollTop) {
-    top = 2 * TOOLBAR_BOTTOM_MARGIN + document.body.scrollTop;
-  }
-
-  return {
-    left,
-    top,
-    visibility: 'visible'
-  }
-}
-
+//
+// function this.getToolbarStyle(selectionRect, toolbar) {
+//
+//   let left = selectionRect.left
+//     + selectionRect.width / 2
+//     - toolbar.offsetWidth / 2;
+//
+//   if (left < TOOLBAR_SIDE_MARGIN) {
+//     left = TOOLBAR_SIDE_MARGIN;
+//   }
+//
+//   const scrollTop = getScrollTop();
+//
+//   let top = selectionRect.top
+//     - toolbar.offsetHeight
+//     - TOOLBAR_BOTTOM_MARGIN
+//     + scrollTop;
+//
+//   if (top < 2 * TOOLBAR_BOTTOM_MARGIN + scrollTop) {
+//     top = 2 * TOOLBAR_BOTTOM_MARGIN + scrollTop;
+//   }
+//
+//   return {
+//     left,
+//     top,
+//     visibility: 'visible'
+//   }
+// }
+//
 
 
 const intialState = convertFromHTML(sampleMarkup);
@@ -113,6 +116,10 @@ const extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(blockRenderMap);
 //convertFromRaw(raw);
 
 class RichEditor extends Component {
+
+  static defaultProps = {
+    attachments: []
+  }
   //
   componentDidMount() {
     window.addEventListener('click', this.handleReadOnly);
@@ -131,15 +138,15 @@ class RichEditor extends Component {
     {
       strategy: findEntities('ATTACHMENT'),
       component: Attachment,
-    },
-    {
-      strategy: findURLs,
-      component: URLLink,
-    },
-    {
-      strategy: findHashTags,
-      component: HashTag
-    }
+    }//,
+    // {
+    //   strategy: findURLs,
+    //   component: URLLink,
+    // },
+    // {
+    //   strategy: findHashTags,
+    //   component: HashTag
+    // }
   ]);
 
   state = {
@@ -154,7 +161,8 @@ class RichEditor extends Component {
     toolbarStyle: {
       visibility: 'hidden'
     },
-    readOnly: false
+    readOnly: false,
+    files: this.props.files || [{ filename: "test.pdf", href: "http://ski-o.ru/index.pdf" },{ filename: "test3.pdf", href: "http://ski-o.ru/index.pdf" }]
   };
 
   onChange = (editorState, cb = () => {}) => {
@@ -231,6 +239,36 @@ class RichEditor extends Component {
     return getVisibleSelectionRect(window) || {};
   }
 
+  getToolbarStyle(selectionRect, toolbar) {
+
+    let left = selectionRect.left
+      + selectionRect.width / 2
+      - toolbar.offsetWidth / 2;
+
+    if (left < TOOLBAR_SIDE_MARGIN) {
+      left = TOOLBAR_SIDE_MARGIN;
+    }
+
+    const scrollTop = getScrollTop();
+
+    let top = selectionRect.top
+      - toolbar.offsetHeight
+      - TOOLBAR_BOTTOM_MARGIN
+      + scrollTop;
+
+    if (top < 2 * TOOLBAR_BOTTOM_MARGIN + scrollTop) {
+      top = 2 * TOOLBAR_BOTTOM_MARGIN + scrollTop;
+    }
+
+    const { toolbarStyle } = this.state;
+
+    return {
+      left: left || toolbarStyle.left,
+      top: top || toolbarStyle.top,
+      visibility: 'visible'
+    }
+  }
+
   setAddButtonPosition = () => {
     const editorRect = this.editorWrapper.getBoundingClientRect();
     const selectedDOMNode = this.getSelectedBlockElement();
@@ -251,13 +289,13 @@ class RichEditor extends Component {
     }
 
     const selectionTop =
-      document.body.scrollTop
+      getScrollTop()
     + selectionRect.top
     ;
 
     const blockBottom =
       selectedDOMNodeRect.top
-    + document.body.scrollTop
+    + getScrollTop()
     + selectedDOMNodeRect.height
     - this.addButton.offsetHeight / 2
     ;
@@ -276,7 +314,7 @@ class RichEditor extends Component {
     });
   }
 
-  setToolbarPosition = () => {
+  setToolbarPosition = (toolbar = 'toolbar') => {
     const selectionIsCollapsed =
       this.state.editorState
       .getSelection()
@@ -285,7 +323,6 @@ class RichEditor extends Component {
 
     const currentEntity = this.getCurrentEntity();
     const selectionRect = this.getSelectionRect();
-
 
     const linkIsSelected = (
       !selectionIsCollapsed &&
@@ -297,18 +334,18 @@ class RichEditor extends Component {
       !selectionIsCollapsed &&
       currentEntity &&
       currentEntity.type === 'ATTACHMENT'
-    )
+    );
 
     if (linkIsSelected) {
       return this.setState({
-        toolbarStyle: getToolbarStyle(selectionRect, this.linkEditor),
+        toolbarStyle: this.getToolbarStyle(selectionRect, this.linkEditor),
         toolbar: 'linkEditor'
       });
     }
 
     if (attachmentIsSelected) {
       return this.setState({
-        toolbarStyle: getToolbarStyle(selectionRect, this.attachmentEditor),
+        toolbarStyle: this.getToolbarStyle(selectionRect, this.attachmentEditor),
         toolbar: 'attachmentEditor'
       });
     }
@@ -317,19 +354,14 @@ class RichEditor extends Component {
     const currentBlock = getSelectedBlock(editorState);
     const currentBlockType = currentBlock.getType();
 
-    if (selectionRect.width > 0 && currentBlockType !== 'atomic') {
+    if (selectionRect.width > 0 && !selectionIsCollapsed && currentBlockType !== 'atomic') {
       return this.setState({
-        toolbarStyle: getToolbarStyle(selectionRect, this.toolbar),
-        toolbar: 'toolbar'
+        toolbarStyle: this.getToolbarStyle(selectionRect, this.toolbar),
+        toolbar
       });
     }
 
-    if (
-      selectionIsCollapsed &&
-      (
-        this.state.toolbarStyle.visibility === 'visible'
-      )
-    ) {
+    if (selectionIsCollapsed && toolbarStyle.visibility === 'visible') {
       this.setState({
         toolbarStyle: {
           visibility: 'hidden'
@@ -392,10 +424,18 @@ class RichEditor extends Component {
     const { editorState } = this.state;
 
     const currentEntityKey = getSelectionEntity(editorState);
+
     this.replaceEntityData(currentEntityKey, data);
   }
 
-  replaceEntityData = (key, data) => {
+  setLinkData = data => {
+    const { editorState } = this.state;
+
+    const currentEntityKey = getSelectionEntity(editorState);
+    this.replaceEntityData(currentEntityKey, data, false);
+  }
+
+  replaceEntityData = (key, data, rerender = true) => {
     const { editorState } = this.state;
     const contentState = editorState.getCurrentContent();
     const contentStateWithEntity = contentState.replaceEntityData(key, data);
@@ -404,6 +444,10 @@ class RichEditor extends Component {
       contentStateWithEntity,
       'apply-entity'
     );
+
+    if (!rerender) {
+      return this.onChange(editorStateWithEntity);
+    }
 
     /* This is currently needed to trigger re-render */
     const editorStateWithForcedSelection = EditorState.forceSelection(
@@ -570,12 +614,17 @@ class RichEditor extends Component {
       'apply-entity'
     );
 
-    const collapsedSelection = collapseSelectionToTheEnd(editorStateWithEntity);
-
     const editorStateWithForcedSelection = EditorState.forceSelection(
       editorStateWithEntity,
-      collapsedSelection
+      editorState.getSelection()
     );
+
+    // const collapsedSelection = collapseSelectionToTheEnd(editorStateWithEntity);
+    //
+    // const editorStateWithForcedSelection = EditorState.forceSelection(
+    //   editorStateWithEntity,
+    //   collapsedSelection
+    // );
 
     this.onChange(editorStateWithForcedSelection);
     return key;
@@ -598,9 +647,10 @@ class RichEditor extends Component {
     this.addMedia('TABLE', { content: 'a  b\nc  d' })()
   }
 
-  addAttachment = (files) => {
-    const file = files[0];
-    if (!file) return;
+
+  addAttachment = () => {
+    // const file = files[0];
+    // if (!file) return;
     const { editorState } = this.state;
     const selectionState = editorState.getSelection();
     /*
@@ -609,39 +659,49 @@ class RichEditor extends Component {
      */
     // console.log('isCollapsed', this.savedSelection.isCollapsed());
 
-     const entityKey = this.insertAttachment(
-       editorState,
-       selectionState,
-       {
-         href: '',
-         filename: file.name
-       }
-     );
+    const entityKey = this.insertAttachment(
+      editorState,
+      selectionState,
+      {
+        href: '',
+        // filename: file.name
+      }
+    );
+    //
 
-    this.setState({ isWaitingForUpload: true });
+  }
+
+  uploadAttachment = (files) => {
+    const { editorState } = this.state;
+
+    this.collapseSelection();
+    const entityKey = getSelectionEntity(editorState);
+
+    const file = files[0];
 
     let percentage = 0;
     let self = this;
     let ts = setTimeout(function progress() {
-      console.log('Trigger')
+      // console.log('Trigger')
       self.replaceEntityData(entityKey, {
-       href: '',
-       filename: file.name,
-       progress: percentage
-     });
+        href: '',
+        filename: file.name,
+        progress: percentage
+      });
+
 
       if (percentage >= 100) return self.replaceEntityData(entityKey, {
-       href: 'ski-o.ru',
-       filename: file.name,
-       progress: 100
-     });
+        href: `http://ski-o.ru/docs/${file.name}`,
+        filename: file.name,
+        progress: 100
+      });
+
       percentage += 10;
       ts = setTimeout(progress, 500)
     }, 500);
-
   }
 
-  closeLinkEditor = () => {
+  collapseSelection = () => {
     const { editorState } = this.state;
     const selectionState = collapseSelectionToTheEnd(editorState);
     const editorStateWithCollapsedSelection =
@@ -727,12 +787,12 @@ class RichEditor extends Component {
           onClick={this.addLink}>
           <i className="fa fa-link"/>
         </Button>
-        <UploadButton
+        <Button
           className=""
-          onClick={this.saveSelection}
-          onChange={this.addAttachment}>
+          onClick={this.addAttachment}
+          >
           <i className="fa fa-paperclip"/>
-        </UploadButton>
+        </Button>
       </div>
     );
   }
@@ -769,6 +829,12 @@ class RichEditor extends Component {
             onTab={this.onTab}
             onChange={this.onChange} />
         </div>
+        <div>
+          <h2>Загруженные файлы</h2>
+          { this.state.files.map((file, i) => {
+            return <File key={i} {...file} />
+          })}
+        </div>
         <AddButton
           DOMNodeRef={n => this.addButton = n}
           style={this.state.addButtonStyle}
@@ -776,7 +842,6 @@ class RichEditor extends Component {
           addYoutube={this.addYoutube}
           addInstagram={this.addInstagram}
           addHTML={this.addHTML}
-          addAttachment={this.addAttachment}
           />
         <LinkEditor
           DOMNodeRef={n => this.linkEditor = n}
@@ -784,16 +849,18 @@ class RichEditor extends Component {
           removeLink={this.removeLink}
           data={currentEntityData}
           style={linkEditorStyle}
-          onChange={this.setEntityData}
-          onClose={this.closeLinkEditor}
+          onChange={this.setLinkData}
+          onClose={this.collapseSelection}
           />
         <AttachmentEditor
           DOMNodeRef={n => this.attachmentEditor = n}
           onRemove={this.removeCurrentEntity}
           data={currentEntityData}
           style={attachmentEditorStyle}
+          onUpload={this.uploadAttachment}
           onChange={this.setEntityData}
-          onClose={this.closeLinkEditor}
+          onClose={this.collapseSelection}
+          attachments={this.props.attachments}
           />
       </div>
     );
@@ -802,3 +869,16 @@ class RichEditor extends Component {
 
 
 export default RichEditor;
+
+
+
+function File({ filename, href, onDelete = () => {} }) {
+  return (
+    <div className="bg-light-gray dib pa2 ma2">
+      <a href={href}>{ filename }</a>
+      <div>
+        <a href="" onClick={onDelete}>Delete</a>
+      </div>
+    </div>
+  );
+}

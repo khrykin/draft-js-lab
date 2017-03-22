@@ -23,6 +23,7 @@ export default function Button({
 }
 
 
+
 export class UploadButton extends Component {
   static defaultProps = {
     onChange() {},
@@ -49,7 +50,6 @@ export class UploadButton extends Component {
         <Button
           {...props}
           onClick={this.delegateUpload}>
-
           { children }
         </Button>
         <input

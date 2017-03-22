@@ -5,7 +5,19 @@ import Editor from './editor/Editor';
 class App extends Component {
   state = {
     html: 'Hello',
-    showHTML: false
+    showHTML: false,
+    attachments: [
+      {
+        href: 'http://ski-o.ru/docs/info_gelendzikvelo17.pdf',
+        size: '16 kB',
+        id: 1
+      },
+      {
+        href: 'http://ski-o.ru/docs/results2017.pdf',
+        size: '100 kB',
+        id: 2
+      }
+    ]
   };
 
   change = html => {
@@ -14,6 +26,10 @@ class App extends Component {
 
   toggleHTML = () => {
     this.setState({ showHTML: !this.state.showHTML })
+  }
+
+  attach = () => {
+
   }
 
   render() {
@@ -25,6 +41,9 @@ class App extends Component {
           <Editor
             value={this.state.html}
             onChange={this.change}
+            uploads={this.state.uploads}
+            onAttach={this.attach}
+            attachments={this.state.attachments}
             />
         </div>
         <div className="dtc w-50 pa2">

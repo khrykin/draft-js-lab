@@ -46,19 +46,20 @@ const attachmentStyle = {
 };
 
 export function Attachment({ children, ...props }) {
-  console.log('Attachment props', props);
   const { entityKey, contentState } = props;
   const entity = contentState.getEntity(entityKey);
   const data = entity.getData();
   if (!data.href) {
     return (
       <span className="Attachment-loading">
-        <strong className="Attachment-loading--info f6">
-          { data.progress } %
-        </strong>
-        <span className="Attachment-loading-blinker">
+        { typeof data.progress !== 'undefined' && (
+          <strong className="Attachment-loading--info f6">
+            { data.progress } %
+          </strong>
+        )}
+        <a className={ data.progress ? "Attachment-loading-blinker" : ''} href="">
         { children }
-        </span>
+        </a>
       </span>
     );
   }
