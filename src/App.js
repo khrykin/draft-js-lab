@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import Editor from './editor/Editor';
+import sampleMarkup from "./editor/sampleMarkup";
 
 class App extends Component {
   state = {
@@ -39,7 +40,7 @@ class App extends Component {
         <div className="dtc w-50 pa2">
           <h2>Editor</h2>
           <Editor
-            value={this.state.html}
+            initialValue={sampleMarkup}
             onChange={this.change}
             uploads={this.state.uploads}
             onAttach={this.attach}

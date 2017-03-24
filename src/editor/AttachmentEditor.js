@@ -39,11 +39,11 @@ export default class AttachmentEditor extends Component {
     return (
       <div
         ref={this.props.DOMNodeRef}
-        className="absolute pa1 dt bg-black white shadow-4 white br2 z-index-3"
+        className="absolute pa1 dt bg-black white shadow-4 white br2 z99"
         style={this.props.style}>
         { data.filename ? (
           <div>
-            <div className="dib">
+            <div className="dib pa2">
               <a className="white" target="__blank" href={data.href}>
                 <FileInfo {...data} />
               </a>
@@ -98,7 +98,7 @@ function getExtensionFromURL(url) {
 function FileIcon({ href }) {
   const filename = getFilenameFromURL(href);
   const extension = getExtensionFromURL(href);
-  console.log('extension', extension);
+
   let iconClassName = 'fa-file-o';
   switch (extension) {
     case 'pdf':

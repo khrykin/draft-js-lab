@@ -6,17 +6,52 @@ export default class HTMLEditor extends Component {
     onChange() {}
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (this.state.isEditing && !nextProps.focused) {
+      this.setState({ isEditing: false });
+    }
+  }
+
+  toggleIsEditing = e => {
+    e && e.preventDefault();
+    this.setState({ isEditing: true });
+  }
+
+
+  state = {
+    isEditing: false
+  }
+
   change = e => {
     const { value } = e.target;
-    this.props.onChange(value);
+    this.props.onChange({
+      ...this.props.data,
+      content: value
+    });
   }
 
   render() {
+    const { isEditing } = this.state;
+    const { data } = this.props;
     return (
-        <textarea
-          className="code"
-          value={this.props.value}
-          onChange={this.change} />
+      <div>
+        { isEditing ? (
+          <textarea
+            className="dib code input-reset"
+            value={data.content}
+            onChange={this.change} />
+        ) : (
+          <span>
+            <div dangerouslySetInnerHTML={{__html: data.content }} />
+          </span>
+        )}
+        <div style={{ visibility: isEditing ? 'hidden' : 'visible' }}>
+          <a href=""
+            onClick={this.toggleIsEditing}>
+            Edit
+          </a>
+        </div>
+      </div>
     );
   }
 }

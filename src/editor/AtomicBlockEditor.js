@@ -4,30 +4,35 @@ import { removeBlock } from './utils';
 import Media from './Media';
 import TableEditor, { CSVToHTML } from './TableEditor';
 
-export default class MediaBlockEditor extends Component {
+function getDataFromProps(props) {
+  const key = props.block.getEntityAt(0);
+  const { contentState } = props;
+  const entity = contentState.getEntity(key);
+  const data = entity.getData();
+  return data;
+}
 
+export default class MediaBlockEditor extends Component {
 
   constructor(props) {
     super(props);
-    const key = props.block.getEntityAt(0);
-    const { contentState } = props;
-    const entity = contentState.getEntity(key);
-    const data = entity.getData();
 
     this.state = {
-      data,
+      data: getDataFromProps(props),
       focused: false,
       editCaption: false
     };
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log('this.state.editCaption', this.state.editCaption);
-    console.log('!nextProps.focused', !nextProps.focused);
-
     if (this.state.editCaption && !nextProps.focused) {
-      console.log('LOOSE CAPTION')
       this.setState({ editCaption: false });
+    }
+
+    const nextData = getDataFromProps(nextProps);
+
+    if (nextData && nextData !== this.state.data) {
+      this.setState({ data: nextData });
     }
   }
 
@@ -41,14 +46,14 @@ export default class MediaBlockEditor extends Component {
 
   handleClick = (e) => {
     if (!this.DOMNode.contains(e.target)) {
-      /* Click outside */
 
+      /* Click outside */
       if (this.state.focused) {
         this.looseFocus();
       }
     } else {
-      /* Click inside */
 
+      /* Click inside */
       if (!this.state.focused) {
         this.setFocus();
       }
@@ -130,40 +135,18 @@ export default class MediaBlockEditor extends Component {
     this.looseFocus();
   }
 
+  uploadImageForKey = key => files => {
+    const { editor } = this.props.blockProps;
+    editor.uploadImageForKey(key, files);
+  }
+
   render() {
     const key = this.props.block.getEntityAt(0);
     const { contentState } = this.props;
     const entity = contentState.getEntity(key);
-    // const data = entity.getData();
     const type = entity.getType();
 
     const { editor } = this.props.blockProps;
-
-    // if (type === 'TABLE') {
-    //   return (
-    //     <div
-    //       draggable
-    //       onDragStart={this.props.blockProps.onDragStart}
-    //       onDragEnd={this.props.blockProps.onDragEnd}
-    //       >
-    //       { this.state.edit ? (
-    //         <span>
-    //           <TableEditor
-    //             value={this.state.content}
-    //             onChange={this.setField('content')}
-    //             />
-    //           <a href="" onClick={this.save}>Done</a>
-    //         </span>
-    //       ) : (
-    //         <span>
-    //           <div dangerouslySetInnerHTML={{__html: CSVToHTML(this.state.content) }} />
-    //           <a href="" onClick={this.edit}>Edit</a>
-    //         </span>
-    //       ) }
-    //     </div>
-    //
-    //   )
-    // }
 
     return (
       <div
@@ -186,8 +169,8 @@ export default class MediaBlockEditor extends Component {
           focused={this.state.focused}
           onChange={this.onMediaDataChange}
           onFocus={this.blockEditor}
-          onBlur={this.save}
-          />
+          onUpload={this.uploadImageForKey(key)}
+          onBlur={this.save} />
         <figcaption>
           { this.state.editCaption ? (
             <span>

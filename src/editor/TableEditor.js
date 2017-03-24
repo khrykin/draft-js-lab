@@ -37,19 +37,20 @@ export default class TableEditor extends Component {
       <div>
         { isEditing ? (
           <textarea
-            className="code"
+            className="dib code input-reset"
             value={data.content}
             onChange={this.change} />
         ) : (
           <span>
             <div dangerouslySetInnerHTML={{__html: CSVToHTML(data.content)}} />
-            <a href=""
-              onClick={this.toggleIsEditing}
-              >
-              Edit
-            </a>
           </span>
         )}
+        <div style={{ visibility: isEditing ? 'hidden' : 'visible' }}>
+          <a href=""
+            onClick={this.toggleIsEditing}>
+            Edit
+          </a>
+        </div>
       </div>
     );
   }

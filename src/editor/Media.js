@@ -1,19 +1,63 @@
 import React, { Component } from 'react';
 import Instagram from 'react-instagram-embed';
 import TableEditor, { CSVToHTML } from './TableEditor';
-import Button from './Button';
+import HTMLEditor from './HTMLEditor';
+import Button, { UploadButton } from './Button';
+
+function parseURL(url) {
+  let parser = document.createElement('a');
+  let params = {};
+  // Let the browser do the work
+  parser.href = url;
+  // Convert query string to object
+  let queries = parser.search.replace(/^\?/, '').split('&');
+  for (let i = 0; i < queries.length; i++) {
+    let split = queries[i].split('=');
+    params[split[0]] = split[1];
+  }
+
+  return {
+    protocol: parser.protocol,
+    host: parser.host,
+    hostname: parser.hostname,
+    port: parser.port,
+    pathname: parser.pathname,
+    search: parser.search,
+    params
+  };
+}
+
+function getYoutubeEmbedSrc(url) {
+  const { params, hostname } = parseURL(url);
+  const { v } = params;
+
+  console.log('hostname', parseURL(url));
+  if (hostname !== 'youtube.com' && hostname !== 'www.youtube.com' || !v ) return url;
+  return `http://www.youtube.com/embed/${v}`;
+}
 
 export default class Media extends Component {
   static defaultProps = {
     onChange() {},
     onBlur() {},
-    onFocus() {}
+    onFocus() {},
+    onUpload() {}
   };
 
   state = {};
 
   render() {
     const { data, type, focused } = this.props;
+
+    if (type === 'HTML') {
+      return (
+        <HTMLEditor
+          focused={focused}
+          data={data}
+          onChange={this.props.onChange}
+          />
+      );
+    }
 
     if (type === 'TABLE') {
       return (
@@ -30,8 +74,10 @@ export default class Media extends Component {
         <MediaEditor
           focused={focused}
           data={data}
+          upload
+          onUpload={this.props.onUpload}
           onChange={this.props.onChange}>
-          <img alt={data.src} src={data.src} />
+          <img className="" alt={data.src} src={data.src} />
         </MediaEditor>
       );
 
@@ -42,7 +88,7 @@ export default class Media extends Component {
           data={data}
           onChange={this.props.onChange}>
           <iframe
-            src={data.src}
+            src={getYoutubeEmbedSrc(data.src)}
             frameBorder="0"
             allowFullScreen />
         </MediaEditor>
@@ -54,6 +100,8 @@ export default class Media extends Component {
           url={data.src}
         />
       );
+
+    return <div>*** Undefined Media Type *** </div>
   }
 }
 
@@ -63,7 +111,14 @@ function Toolbar({ children }) {
   );
 }
 
+export const DEFAULT_IMAGE = `image.jpg`;
+export const LOADING_IMAGE = `image2.jpg`;
+
 class MediaEditor extends Component {
+  static defaultProps = {
+    onUpload() { console.log('MediaEditor onUpload is undefined') }
+  }
+
   componentWillReceiveProps(nextProps) {
     if (this.state.showURL && !nextProps.focused) {
       this.setState({ showURL: false });
@@ -96,16 +151,16 @@ class MediaEditor extends Component {
   }
 
   render() {
-    const { data } = this.props;
+    const { data, upload } = this.props;
+    console.log('Media data', data);
     return (
       <div className="relative dib">
         <Toolbar>
           <Button
-            onClick={this.toggleShowURL}
-            >
+            onClick={this.toggleShowURL}>
             URL
           </Button>
-          { (this.state.showURL) && (
+          { this.state.showURL && (
             <input
               type="text"
               value={data.src}
@@ -113,6 +168,18 @@ class MediaEditor extends Component {
               onChange={this.onFieldChange('src')}
               />
           )}
+          { upload && (
+            <span>
+              <UploadButton
+                onChange={this.props.onUpload}>
+                Загрузить
+              </UploadButton>
+              { (data.progress && data.src === LOADING_IMAGE) && (
+                <span>{data.progress} %</span>
+              )}
+            </span>
+          )}
+
         </Toolbar>
         { this.props.children }
       </div>

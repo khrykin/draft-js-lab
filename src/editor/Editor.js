@@ -10,9 +10,9 @@ import {
   getVisibleSelectionRect,
   DefaultDraftBlockRenderMap,
   AtomicBlockUtils,
+  convertToRaw
 } from 'draft-js';
 
-import 'draft-js/dist/Draft.css'
 
 /* State manipulation imports */
 
@@ -40,13 +40,12 @@ import {
   findEntities
 } from './strategies';
 
-import sampleMarkup from "./sampleMarkup";
 
 
 /* Components imports */
 
 // import Instagram from 'react-instagram-embed';
-// import Media from './Media';
+import { DEFAULT_IMAGE, LOADING_IMAGE } from './Media';
 import AtomicBlockEditor from './AtomicBlockEditor';
 // import HTMLEditor from './HTMLEditor';
 import LinkEditor from './LinkEditor';
@@ -65,38 +64,46 @@ import {
 const TOOLBAR_BOTTOM_MARGIN = 15;
 const TOOLBAR_SIDE_MARGIN = 15;
 
-//
-// function this.getToolbarStyle(selectionRect, toolbar) {
-//
-//   let left = selectionRect.left
-//     + selectionRect.width / 2
-//     - toolbar.offsetWidth / 2;
-//
-//   if (left < TOOLBAR_SIDE_MARGIN) {
-//     left = TOOLBAR_SIDE_MARGIN;
-//   }
-//
-//   const scrollTop = getScrollTop();
-//
-//   let top = selectionRect.top
-//     - toolbar.offsetHeight
-//     - TOOLBAR_BOTTOM_MARGIN
-//     + scrollTop;
-//
-//   if (top < 2 * TOOLBAR_BOTTOM_MARGIN + scrollTop) {
-//     top = 2 * TOOLBAR_BOTTOM_MARGIN + scrollTop;
-//   }
-//
-//   return {
-//     left,
-//     top,
-//     visibility: 'visible'
-//   }
-// }
-//
+function reloadScripts(container = document) {
+  const scripts = container.getElementsByTagName('script');
+  if (!scripts.length) return;
+  for (let i in scripts) {
+    const script = scripts[i];
+    if (!script.getAttribute) continue;
 
 
-const intialState = convertFromHTML(sampleMarkup);
+    let newScript = document.createElement('script');
+    newScript.textContent = script.textContent;
+
+    let src = script.getAttribute('src');
+    // if (!/\?/.test(src)) {
+    //   src = src + `?${Math.random().toString(36).substr(2, 5)}`;
+    // } else {
+    //   src = src.replace(/(\?+)/, `?${Math.random().toString(36).substr(2, 5)}`);
+    // }
+
+    for (let ai in script.attributes) {
+      const { name, value } = script.attributes[ai];
+      if (typeof value === 'undefined') continue;
+      newScript.setAttribute(name, value);
+    }
+    newScript.setAttribute('src', src);
+
+    const head = document.getElementsByTagName('HEAD')[0];
+    script.parentNode.appendChild(newScript);
+    script.parentNode.removeChild(script);
+
+    /* Special fix for instagram */
+    /* NB! Doesn't work in IE
+     * http://stackoverflow.com/questions/14644558/call-javascript-function-after-script-is-loaded
+     */
+    newScript.onload = () => {
+      window.instgrm && window.instgrm.Embeds.process();
+    };
+  };
+}
+
+
 
 const blockRenderMap = Map({
   // 'unstyled': {
@@ -118,15 +125,26 @@ const extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(blockRenderMap);
 class RichEditor extends Component {
 
   static defaultProps = {
-    attachments: []
+    attachments: [],
+    initalValue: ""
   }
   //
   componentDidMount() {
+    require('draft-js/dist/Draft.css');
+    require('../index.css');
     window.addEventListener('click', this.handleReadOnly);
   }
 
   componentWillUnmount() {
     window.removeEventListener('click', this.handleReadOnly);
+  }
+
+  componentDidUpdate() {
+    this.reloadScripts();
+  }
+
+  reloadScripts() {
+    reloadScripts(this.editorWrapper);
   }
 
 
@@ -149,21 +167,31 @@ class RichEditor extends Component {
     // }
   ]);
 
-  state = {
-    editorState: EditorState.createWithContent(intialState, this.createDecorator()),
-    // toolbarStyle: {
-    //   visibility: 'hidden'
-    // },
-    // linkEditorStyle: {
-    //   visibility: 'hidden'
-    // },
-    toolbar: null,
-    toolbarStyle: {
-      visibility: 'hidden'
-    },
-    readOnly: false,
-    files: this.props.files || [{ filename: "test.pdf", href: "http://ski-o.ru/index.pdf" },{ filename: "test3.pdf", href: "http://ski-o.ru/index.pdf" }]
-  };
+  constructor(props) {
+    super(props);
+
+    const decorator = this.createDecorator();
+
+    const intialContentState = convertFromHTML(props.initialValue);
+
+    this.state = {
+      editorState: EditorState.createWithContent(intialContentState, decorator),
+      // toolbarStyle: {
+      //   visibility: 'hidden'
+      // },
+      // linkEditorStyle: {
+      //   visibility: 'hidden'
+      // },
+      toolbar: null,
+      toolbarStyle: {
+        visibility: 'hidden'
+      },
+      readOnly: false,
+      // files: this.props.files || [{ filename: "test.pdf", href: "http://ski-o.ru/index.pdf" },{ filename: "test3.pdf", href: "http://ski-o.ru/index.pdf" }]
+    };
+  }
+
+
 
   onChange = (editorState, cb = () => {}) => {
     // const selectionRect = getVisibleSelectionRect(window) || {};
@@ -173,7 +201,7 @@ class RichEditor extends Component {
       console.log('currentBlock', currentBlock.getType());
 
       this.props.onChange(convertToHTML(this.state.editorState));
-      // console.log("EDITOR_STATE", JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())));
+      console.log("EDITOR_STATE", convertToRaw(this.state.editorState.getCurrentContent()));
       this.setAddButtonPosition();
       this.setToolbarPosition();
       cb();
@@ -632,7 +660,7 @@ class RichEditor extends Component {
 
 
   addPhoto = () => {
-    this.addMedia('PHOTO', { src: 'image.jpg' })()
+    this.addMedia('PHOTO', { src: DEFAULT_IMAGE })()
   }
 
   addYoutube = () => {
@@ -643,8 +671,12 @@ class RichEditor extends Component {
     this.addMedia('INSTAGRAM', { src: 'https://www.instagram.com/p/BMWm4GPjxEV' })()
   }
 
-  addHTML= () => {
+  addTable= () => {
     this.addMedia('TABLE', { content: 'a  b\nc  d' })()
+  }
+
+  addHTML= () => {
+    this.addMedia('HTML', { content: '<b>Hello</b> hello' })()
   }
 
 
@@ -653,11 +685,6 @@ class RichEditor extends Component {
     // if (!file) return;
     const { editorState } = this.state;
     const selectionState = editorState.getSelection();
-    /*
-     * fetch()
-     * .then(href => {
-     */
-    // console.log('isCollapsed', this.savedSelection.isCollapsed());
 
     const entityKey = this.insertAttachment(
       editorState,
@@ -671,34 +698,81 @@ class RichEditor extends Component {
 
   }
 
-  uploadAttachment = (files) => {
+
+  uploadImageForKey = (entityKey, files) => {
+    const { editorState } = this.state;
+
+    const file = files[0];
+    this.waitingForUpload = true;
+
+    if (!/^image/.test(file.type)) {
+      return alert("Недопустимый формат файла");
+    }
+
+    let percentage = 0;
+    let self = this;
+    let ts = setTimeout(function progress() {
+
+      self.replaceEntityData(entityKey, {
+        src: LOADING_IMAGE,
+        filename: file.name,
+        size: file.size,
+        progress: percentage
+      });
+
+      if (percentage >= 100) {
+        this.waitingForUpload = false;
+        return self.replaceEntityData(entityKey, {
+          src: `http://ski-o.ru/docs/${file.name}`,
+          filename: file.name,
+          size: file.size,
+          progress: 100
+        });
+      }
+
+      percentage += 10;
+      ts = setTimeout(progress, 500)
+    }, 500);
+  }
+
+  uploadAttachmentForKey = (entityKey, files) => {
     const { editorState } = this.state;
 
     this.collapseSelection();
-    const entityKey = getSelectionEntity(editorState);
+    this.waitingForUpload = true;
 
     const file = files[0];
 
     let percentage = 0;
     let self = this;
     let ts = setTimeout(function progress() {
-      // console.log('Trigger')
+
       self.replaceEntityData(entityKey, {
         href: '',
         filename: file.name,
-        progress: percentage
+        size: file.size,
+        progress: percentage,
       });
 
-
-      if (percentage >= 100) return self.replaceEntityData(entityKey, {
-        href: `http://ski-o.ru/docs/${file.name}`,
-        filename: file.name,
-        progress: 100
-      });
+      if (percentage >= 100) {
+        this.waitingForUpload = false;
+        return self.replaceEntityData(entityKey, {
+          href: `http://ski-o.ru/docs/${file.name}`,
+          filename: file.name,
+          size: file.size,
+          progress: 100
+        });
+    }
 
       percentage += 10;
       ts = setTimeout(progress, 500)
     }, 500);
+  }
+
+  uploadAttachment = (files) => {
+    const { editorState } = this.state;
+    const entityKey = getSelectionEntity(editorState);
+    this.uploadAttachmentForKey(entityKey, files);
   }
 
   collapseSelection = () => {
@@ -720,7 +794,7 @@ class RichEditor extends Component {
     };
     return (
       <div ref={n => this.toolbar = n}
-        className="absolute pa1 shadow-4 white bg-black white br2 z-index-3"
+        className="z99 absolute pa1 shadow-4 white bg-black white br2 z-index-3"
         style={mainToolbarStyle}>
         <Button
           className="b serif"
@@ -829,12 +903,6 @@ class RichEditor extends Component {
             onTab={this.onTab}
             onChange={this.onChange} />
         </div>
-        <div>
-          <h2>Загруженные файлы</h2>
-          { this.state.files.map((file, i) => {
-            return <File key={i} {...file} />
-          })}
-        </div>
         <AddButton
           DOMNodeRef={n => this.addButton = n}
           style={this.state.addButtonStyle}
@@ -842,6 +910,7 @@ class RichEditor extends Component {
           addYoutube={this.addYoutube}
           addInstagram={this.addInstagram}
           addHTML={this.addHTML}
+          addTable={this.addTable}
           />
         <LinkEditor
           DOMNodeRef={n => this.linkEditor = n}

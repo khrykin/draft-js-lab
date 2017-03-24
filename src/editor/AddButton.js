@@ -22,7 +22,7 @@ export default class AddButton extends Component {
     return (
       <div
         style={this.props.style}
-        className="absolute z-index-3 tc w2"
+        className="absolute z99 tc w2"
         >
         <div
           onClick={this.toggleShow}
@@ -49,6 +49,13 @@ export default class AddButton extends Component {
             <div>
               <Button
                 className=""
+                onClick={this.delegate(this.props.addTable)}>
+                <i className="fa fa-table"/>
+              </Button>
+            </div>
+            <div>
+              <Button
+                className=""
                 onClick={this.delegate(this.props.addYoutube)}>
                 <i className="fa fa-film"/>
               </Button>
@@ -59,13 +66,6 @@ export default class AddButton extends Component {
                 onClick={this.delegate(this.props.addInstagram)}>
                 <i className="fa fa-instagram"/>
               </Button>
-            </div>
-            <div>
-              <UploadButton
-                className=""
-                onChange={this.delegate(this.props.addAttachment)}>
-                <i className="fa fa-paperclip"/>
-              </UploadButton>
             </div>
           </div>
         )}
