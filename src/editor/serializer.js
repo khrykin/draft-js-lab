@@ -8,6 +8,53 @@ import {
   HTMLToCSV
 } from './TableEditor';
 
+let mediaEls = [];
+
+function isPlainHTMLNode(node) {
+  let result = false;
+  let testNode = node;
+  while (testNode.parentElement) {
+    if (testNode.parentElement.dataset && testNode.parentElement.dataset.skioHtml) {
+      return result = true;
+    }
+    testNode = testNode.parentElement;
+
+  }
+  return result;
+}
+
+function preparePlainHTMLMediaEls(html) {
+  const wrapper = document.createElement('DIV');
+
+  wrapper.innerHTML = html;
+
+  const mediaEls = wrapper.querySelectorAll('[data-skio-html]');
+  for (let index in mediaEls ) {
+    const el = mediaEls[index];
+    if (!el.dataset) continue;
+    el.dataset.skioHtmlContent = el.innerHTML;
+    el.innerHTML="";
+  }
+
+  return wrapper.innerHTML;
+}
+
+function prepareTableMediaEls(html) {
+  const wrapper = document.createElement('DIV');
+  wrapper.innerHTML = html;
+
+  const mediaEls = wrapper.getElementsByTagName('table');
+
+  for (let index in mediaEls) {
+    const el = mediaEls[index];
+    if (!el.parentElement) continue;
+    el.dataset.skioTableContent = el.innerHTML;
+    el.innerHTML="";
+  }
+
+  return wrapper.innerHTML;
+}
+
 function toHTML(editorState) {
   return convertToHTML({
     styleToHTML(style) {
@@ -78,10 +125,10 @@ function toHTML(editorState) {
       }
 
       if (entity.type === 'HTML') {
-       return `<div data-skio-html="true">${entity.data.content}</div>` + captionHTML;
+       return `<span contentEditable="false" data-skio-html="true">${entity.data.content}</span>` + captionHTML;
       }
 
-      return originalText;
+      return '';
     }
   })(editorState.getCurrentContent());
 }
@@ -89,15 +136,16 @@ function toHTML(editorState) {
 function fromHTML(html) {
   /* Remove newlines and indentation */
   html = html.replace(/\n\s*/g, '');
+  html = preparePlainHTMLMediaEls(html);
+  html = prepareTableMediaEls(html);
+
+  console.log('html', html);
   return convertFromHTML({
     htmlToStyle(nodeName, node, currentStyle) {
 
-      const isHTMLBlock =
-        node.parentNode &&
-        node.parentNode.dataset &&
-        node.parentNode.dataset.skioHtml;
-
-      if (isHTMLBlock) return currentStyle.clear();
+      // const isPlainHTML= isPlainHTMLNode(node);
+      //
+      // if (isPlainHTML) return currentStyle.clear();
 
       if (nodeName === 'strong') {
         return currentStyle.add('BOLD');
@@ -105,11 +153,21 @@ function fromHTML(html) {
       if (nodeName === 'small') {
         return currentStyle.add('SMALL');
       }
-      // } else {
-        return currentStyle;
-      // }
+
+      return currentStyle;
     },
     htmlToEntity(nodeName, node) {
+
+      // const isPlainHTML= isPlainHTMLNode(node);
+      // if (isPlainHTML) {
+      //   console.log('isPlainHTMLNode', node);
+      //   console.log('isPlainHTML', isPlainHTML);
+      // }
+
+      // if (isPlainHTML) return null;
+
+      console.log('nodeToEntity', node);
+
       if (nodeName === 'a') {
 
         if (node.dataset.skioAttachment) {
@@ -134,18 +192,6 @@ function fromHTML(html) {
         )
       }
 
-      if (node.dataset && node.dataset.skioHtml) {
-        const caption = node.parentNode.children[1] && node.parentNode.children[1].innerText;
-        return Entity.create(
-          'HTML',
-          'IMMUTABLE',
-          {
-            content: node.innerHTML,
-            caption
-          }
-        )
-      }
-
       if (nodeName === 'figure') {
         const mediaEl = node.children[0];
         const src = mediaEl.getAttribute('src');
@@ -156,7 +202,7 @@ function fromHTML(html) {
             'TABLE',
             'IMMUTABLE',
             {
-              content: HTMLToCSV(`<table>${node.innerHTML}</table>`),
+              content: HTMLToCSV(`<table>${mediaEl.dataset.skioTableContent}</table>`),
               caption
             }
           )
@@ -170,7 +216,7 @@ function fromHTML(html) {
           )
         }
 
-        else if (mediaEl instanceof HTMLIFrameElement) {
+        if (mediaEl instanceof HTMLIFrameElement) {
           let type = 'EMBED';
           if (mediaEl.getAttribute('data-instgrm-payload-id')) {
             type = 'INSTAGRAM';
@@ -184,27 +230,61 @@ function fromHTML(html) {
           )
         }
 
+        if (mediaEl instanceof HTMLSpanElement
+            && mediaEl.dataset
+            && mediaEl.dataset.skioHtml
+            && mediaEl.dataset.skioHtmlContent
+          ) {
+          return Entity.create(
+            'HTML',
+            'IMMUTABLE',
+            {
+              content: mediaEl.dataset.skioHtmlContent,
+              caption
+            }
+          );
+        }
+
+        return Entity.create(
+          "DUMB",
+          "IMMUTABLE"
+        )
       }
 
+
     },
-    textToEntity(text) {
-        const result = [];
-        text.replace(/@(\w+)/g, (match, name, offset) => {
-            const entityKey = Entity.create(
-              'AT-MENTION',
-              'IMMUTABLE',
-              { name }
-            );
-            result.push({
-              entity: entityKey,
-              offset,
-              length: match.length,
-              result: match
-            });
-        });
-        return result;
-    },
+    // textToEntity(text) {
+    // //   const result = [];
+    // //   text.replace(/@(\w+)/g, (match, name, offset) => {
+    // //       const entityKey = Entity.create(
+    // //         'AT-MENTION',
+    // //         'IMMUTABLE',
+    // //         { name }
+    // //       );
+    // //       result.push({
+    // //         entity: entityKey,
+    // //         offset,
+    // //         length: match.length,
+    // //         result: match
+    // //       });
+    // //   });
+    //   // return result;
+    // },
     htmlToBlock(nodeName, node) {
+
+      // const isHTMLBlock =
+      //   node.parentNode &&
+      //   node.parentNode.dataset &&
+      //   node.parentNode.dataset.skioHtml;
+      //
+      // if (isHTMLBlock) return {
+      //   type: 'unstyled'
+      // }
+
+      // const isPlainHTML= isPlainHTMLNode(node);
+      //
+      // if (isPlainHTML) return null;
+
       if (nodeName === 'blockquote') {
         return {
           type: 'blockquote',
@@ -215,7 +295,6 @@ function fromHTML(html) {
       if (nodeName === 'figure') {
         return {
           type: 'atomic',
-          text: ''
         };
       }
 

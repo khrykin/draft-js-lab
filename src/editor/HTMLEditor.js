@@ -41,9 +41,7 @@ export default class HTMLEditor extends Component {
             value={data.content}
             onChange={this.change} />
         ) : (
-          <span>
-            <div dangerouslySetInnerHTML={{__html: data.content }} />
-          </span>
+          <span dangerouslySetInnerHTML={{__html: data.content }} />
         )}
         <div style={{ visibility: isEditing ? 'hidden' : 'visible' }}>
           <a href=""
