@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import CodeEditor from './CodeEditor';
 
 export default class TableEditor extends Component {
 
@@ -22,8 +23,8 @@ export default class TableEditor extends Component {
     isEditing: false
   }
 
-  change = e => {
-    const { value } = e.target;
+  change = value => {
+    // const { value } = e.target;
     this.props.onChange({
       ...this.props.data,
       content: value
@@ -36,8 +37,7 @@ export default class TableEditor extends Component {
     return (
       <div>
         { isEditing ? (
-          <textarea
-            className="dib code input-reset"
+          <CodeEditor
             value={data.content}
             onChange={this.change} />
         ) : (
@@ -45,10 +45,10 @@ export default class TableEditor extends Component {
             <div dangerouslySetInnerHTML={{__html: CSVToHTML(data.content)}} />
           </span>
         )}
-        <div style={{ visibility: isEditing ? 'hidden' : 'visible' }}>
-          <a href=""
+        <div style={{ display: isEditing ? 'none' : 'block' }}>
+          <a href="" className="link dim gray"
             onClick={this.toggleIsEditing}>
-            Edit
+            <i className="fa fa-pencil" />
           </a>
         </div>
       </div>

@@ -27,11 +27,10 @@ function parseURL(url) {
   };
 }
 
-function getYoutubeEmbedSrc(url) {
+export function getYoutubeEmbedSrc(url) {
   const { params, hostname } = parseURL(url);
   const { v } = params;
 
-  console.log('hostname', parseURL(url));
   if (hostname !== 'youtube.com' && hostname !== 'www.youtube.com' || !v ) return url;
   return `http://www.youtube.com/embed/${v}`;
 }
@@ -77,7 +76,16 @@ export default class Media extends Component {
           upload
           onUpload={this.props.onUpload}
           onChange={this.props.onChange}>
-          <img className="" alt={data.src} src={data.src} />
+          { data.src ? (
+            <img className="" alt={data.src} src={data.src} />
+          ) :  (
+            <EmptyMedia>
+              <i className="fa fa-photo" />
+              { data.progress > 0 && (
+                <span>{' '}{ data.progress } %</span>
+              )}
+            </EmptyMedia>
+          )}
         </MediaEditor>
       );
 
@@ -87,10 +95,20 @@ export default class Media extends Component {
           focused={focused}
           data={data}
           onChange={this.props.onChange}>
-          <iframe
-            src={getYoutubeEmbedSrc(data.src)}
-            frameBorder="0"
-            allowFullScreen />
+          { data.src ? (
+            <div className="Embed">
+              <iframe
+                src={getYoutubeEmbedSrc(data.src)}
+                width="400"
+                height="300"
+                frameBorder="0"
+                allowFullScreen />
+            </div>
+          ) : (
+            <EmptyMedia>
+              <i className="fa fa-video-camera" />
+            </EmptyMedia>
+          ) }
         </MediaEditor>
       );
 
@@ -107,7 +125,17 @@ export default class Media extends Component {
 
 function Toolbar({ children }) {
   return (
-    <div className="pa2 bg-black-30 white absolute w-100 tl">{ children }</div>
+    <div className="pa2 child z99 bg-black-30 white absolute w-100 tl">{ children }</div>
+  );
+}
+
+function EmptyMedia({ children }) {
+  return (
+    <div className="dt bg-light-gray h5 w-100 tc mb1 br2">
+      <div className="dtc v-mid gray lh-copy f6">
+        { children }
+      </div>
+    </div>
   );
 }
 
@@ -152,9 +180,8 @@ class MediaEditor extends Component {
 
   render() {
     const { data, upload } = this.props;
-    console.log('Media data', data);
     return (
-      <div className="relative dib">
+      <div className="relative hide-child">
         <Toolbar>
           <Button
             onClick={this.toggleShowURL}>
@@ -174,9 +201,6 @@ class MediaEditor extends Component {
                 onChange={this.props.onUpload}>
                 Загрузить
               </UploadButton>
-              { (data.progress && data.src === LOADING_IMAGE) && (
-                <span>{data.progress} %</span>
-              )}
             </span>
           )}
 

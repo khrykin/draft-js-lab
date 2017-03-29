@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import CodeEditor from './CodeEditor';
 
 export default class HTMLEditor extends Component {
 
@@ -22,8 +23,7 @@ export default class HTMLEditor extends Component {
     isEditing: false
   }
 
-  change = e => {
-    const { value } = e.target;
+  change = value => {
     this.props.onChange({
       ...this.props.data,
       content: value
@@ -34,19 +34,19 @@ export default class HTMLEditor extends Component {
     const { isEditing } = this.state;
     const { data } = this.props;
     return (
-      <div>
+      <div className="realtive">
         { isEditing ? (
-          <textarea
-            className="dib code input-reset"
+          <CodeEditor
             value={data.content}
-            onChange={this.change} />
+            onChange={this.change}
+            />
         ) : (
           <span dangerouslySetInnerHTML={{__html: data.content }} />
         )}
-        <div style={{ visibility: isEditing ? 'hidden' : 'visible' }}>
-          <a href=""
+        <div style={{ display: isEditing ? 'none' : 'block' }}>
+          <a href="" className="link dim gray"
             onClick={this.toggleIsEditing}>
-            Edit
+            <i className="fa fa-pencil" />
           </a>
         </div>
       </div>

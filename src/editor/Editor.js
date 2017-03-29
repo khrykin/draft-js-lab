@@ -660,15 +660,15 @@ class RichEditor extends Component {
 
 
   addPhoto = () => {
-    this.addMedia('PHOTO', { src: DEFAULT_IMAGE })()
+    this.addMedia('PHOTO', { src: '' })()
   }
 
   addYoutube = () => {
-    this.addMedia('YOUTUBE', { src: 'https://www.youtube.com/embed/dQw4w9WgXcQ' })()
+    this.addMedia('YOUTUBE', { src: '' })()
   }
 
   addInstagram = () => {
-    this.addMedia('INSTAGRAM', { src: 'https://www.instagram.com/p/BMWm4GPjxEV' })()
+    this.addMedia('INSTAGRAM', { src: '' })()
   }
 
   addTable= () => {
@@ -676,7 +676,7 @@ class RichEditor extends Component {
   }
 
   addHTML= () => {
-    this.addMedia('HTML', { content: '<b>Hello</b> hello' })()
+    this.addMedia('HTML', { content: 'Вставьте <strong>HTML</strong> код' })()
   }
 
 
@@ -714,7 +714,7 @@ class RichEditor extends Component {
     let ts = setTimeout(function progress() {
 
       self.replaceEntityData(entityKey, {
-        src: LOADING_IMAGE,
+        src: '',
         filename: file.name,
         size: file.size,
         progress: percentage

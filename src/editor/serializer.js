@@ -8,6 +8,8 @@ import {
   HTMLToCSV
 } from './TableEditor';
 
+import { getYoutubeEmbedSrc } from './Media';
+
 let mediaEls = [];
 
 function isPlainHTMLNode(node) {
@@ -47,10 +49,33 @@ function prepareTableMediaEls(html) {
 
   for (let index in mediaEls) {
     const el = mediaEls[index];
-    if (!el.parentElement) continue;
+    if (!el.dataset) continue;
     el.dataset.skioTableContent = el.innerHTML;
-    el.innerHTML="";
+    el.innerHTML = "";
   }
+
+  return wrapper.innerHTML;
+}
+
+function prepareEmbedMediaEls(html) {
+  const wrapper = document.createElement('DIV');
+  wrapper.innerHTML = html;
+
+  const mediaEls = wrapper.querySelectorAll('.Embed');
+
+
+  for (let index in mediaEls) {
+    const el = mediaEls[index];
+    if (!el.parentNode) continue;
+    const span = document.createElement('SPAN');
+    console.log('el', el);
+    span.innerHTML = el.innerHTML;
+    span.className = "Embed";
+    el.parentNode.insertBefore(span, el);
+    el.parentNode.removeChild(el);
+  }
+
+  console.log('prepareEmbedMediaEls', wrapper.innerHTML);
 
   return wrapper.innerHTML;
 }
@@ -108,7 +133,7 @@ function toHTML(editorState) {
 
       if (entity.type === 'YOUTUBE') {
         return (
-          `<iframe src="${src}" frameborder="0" allowfullscreen></iframe>` +
+          `<div class="Embed"><iframe src="${getYoutubeEmbedSrc(src)}" frameborder="0" allowfullscreen></iframe></div>` +
           captionHTML
         );
       }
@@ -138,8 +163,8 @@ function fromHTML(html) {
   html = html.replace(/\n\s*/g, '');
   html = preparePlainHTMLMediaEls(html);
   html = prepareTableMediaEls(html);
+  html = prepareEmbedMediaEls(html);
 
-  console.log('html', html);
   return convertFromHTML({
     htmlToStyle(nodeName, node, currentStyle) {
 
@@ -165,8 +190,6 @@ function fromHTML(html) {
       // }
 
       // if (isPlainHTML) return null;
-
-      console.log('nodeToEntity', node);
 
       if (nodeName === 'a') {
 
@@ -194,7 +217,6 @@ function fromHTML(html) {
 
       if (nodeName === 'figure') {
         const mediaEl = node.children[0];
-        const src = mediaEl.getAttribute('src');
         const caption = node.children[1] && node.children[1].innerText;
 
         if (mediaEl instanceof HTMLTableElement) {
@@ -209,6 +231,8 @@ function fromHTML(html) {
         }
 
         if (mediaEl instanceof HTMLImageElement) {
+          const src = mediaEl.getAttribute('src');
+
           return Entity.create(
             'PHOTO',
             'IMMUTABLE',
@@ -216,15 +240,19 @@ function fromHTML(html) {
           )
         }
 
-        if (mediaEl instanceof HTMLIFrameElement) {
-          let type = 'EMBED';
-          if (mediaEl.getAttribute('data-instgrm-payload-id')) {
-            type = 'INSTAGRAM';
-          } else {
-            type = 'YOUTUBE';
-          }
+        if (mediaEl instanceof HTMLSpanElement && mediaEl.classList.contains('Embed')) {
+          console.log('mediaEl', mediaEl);
+
+          // let type = 'EMBED';
+          // if (mediaEl.getAttribute('data-instgrm-payload-id')) {
+          //   type = 'INSTAGRAM';
+          // } else {
+          //   type = 'YOUTUBE';
+          // }
+          const src = mediaEl.children[0].getAttribute('src');
+
           return Entity.create(
-            type,
+            'YOUTUBE',
             'IMMUTABLE',
             { src, caption }
           )

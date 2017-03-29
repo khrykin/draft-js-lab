@@ -4,6 +4,9 @@ import { removeBlock } from './utils';
 import Media from './Media';
 import TableEditor, { CSVToHTML } from './TableEditor';
 
+import PlainTextEditor from './PlainTextEditor';
+
+
 function getDataFromProps(props) {
   const key = props.block.getEntityAt(0);
   const { contentState } = props;
@@ -46,13 +49,11 @@ export default class MediaBlockEditor extends Component {
 
   handleClick = (e) => {
     if (!this.DOMNode.contains(e.target)) {
-
       /* Click outside */
       if (this.state.focused) {
         this.looseFocus();
       }
     } else {
-
       /* Click inside */
       if (!this.state.focused) {
         this.setFocus();
@@ -64,6 +65,7 @@ export default class MediaBlockEditor extends Component {
     const { editor } = this.props.blockProps;
     editor.setState({ readOnly: true }, () => {
       this.setState({ focused: true });
+      // this.captionEditor.focus();
     });
   }
 
@@ -87,7 +89,7 @@ export default class MediaBlockEditor extends Component {
   }
 
   setInputField = name => e => {
-    const { value } = e.target;
+    const value = e.target ? e.target.value : e;
     this.setState({
       data: {
         ...this.state.data,
@@ -155,13 +157,13 @@ export default class MediaBlockEditor extends Component {
         ref={n => this.DOMNode = n}
         onDragStart={this.props.blockProps.onDragStart}
         onDragEnd={this.props.blockProps.onDragEnd}
-        style={this.state.focused ? { border: '2px solid blue' } : {}}
+        style={{} /*this.state.focused ? { border: '2px solid blue' } : {}*/}
         >
         <a
           href=""
-          className="absolute right--1 top--1"
+          className="absolute right--1 top--1 link dim blue"
           onClick={this.delete}>
-          x
+          <i className="fa fa-close" />
         </a>
         <Media
           type={type}
@@ -172,20 +174,14 @@ export default class MediaBlockEditor extends Component {
           onUpload={this.uploadImageForKey(key)}
           onBlur={this.save} />
         <figcaption>
-          { this.state.editCaption ? (
-            <span>
-              <input
-                type="text"
-                defaultValue={this.state.data.caption}
-                onKeyPress={this.handleCaptionKeyPress}
-                onChange={this.setInputField('caption')}
-                />
-            </span>
-          ) : (
-            <span onClick={this.editCaption}>
-              { this.state.data.caption || 'Подпись...'}
-            </span>
-          ) }
+          <PlainTextEditor
+            type="text"
+            value={getDataFromProps(this.props).caption}
+            placeholder="Подпись..."
+            onKeyPress={this.handleCaptionKeyPress}
+            onChange={this.setInputField('caption')}
+            onBlockParentEditor={this.setFocus}
+            />
         </figcaption>
       </div>
     );

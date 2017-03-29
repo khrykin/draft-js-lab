@@ -11,6 +11,7 @@
     "react-scripts": "0.7.0"
   },
   "dependencies": {
+    "codemirror": "^5.25.0",
     "draft-convert": "^1.4.0",
     "draft-js": "^0.10.0",
     "draft-js-import-html": "^0.3.2",

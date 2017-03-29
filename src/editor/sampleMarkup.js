@@ -32,64 +32,68 @@ let html = `
 <p>19 февраля 2017 г. (воскресенье) – л/п Ромашково. Размещение участников на стадионе «Медик» (ул. Маршала Тимошенко, д.1)</p>
 <p></p>`
 +
-`<figure><img src="image.jpg"><figcaption>Подпись</figcaption></figure>`
-+
-`<p>Район соревнований <strong>ЗАКРЫТ</strong> для тренировок с картами до 19 февраля!</p>
-<h3>Участники <small>соревнований</small></h3>
-<ul>
-   <li>М12А (2005-2006г.г.), </li>
-   <li>М14 (2003-2004г.г.), </li>
-   <li>М17 (2000-2002г.г.), </li>
-   <li>М20 (1997-1999г.г.), </li>
-   <li>М21 (1996г. и старше – МС, КМС, 1р.) </li>
-   <li>Ж12А (2005-2006г.г.), </li>
-   <li>Ж14 (2003-2004г.г.), </li>
-   <li>Ж17 (2000-2002г.г.), </li>
-   <li>Ж20 (1997-1999г.г.), </li>
-   <li>Ж21(1996г. и старше – МС, КМС, 1р.) </li>
-   <li>М12Б и Ж12Б (2007г. и младше, начинающие 2005-2006г.), </li>
-   <li>О1, О2 (открытые группы). </li>
-</ul>
-<p>Допускаются иногородние участники, которые не участвуют в розыгрыше медалей ЧиП г.Москвы.</p>
-<p>Чемпионат г.Москвы проводится среди участников групп М21 и Ж21 согласно Положению о Чемпионате г.Москвы по спортивному ориентированию на лыжах 2017г. Участники групп МЖ12–20 участвуют в зачёте Первенства г.Москвы согласно Положению о Первенстве г.Москвы по спортивному ориентированию на лыжах 2017г. Ответственность за безопасность и сохранность жизни и здоровья участников в лесу (на дистанции) и во время соревнований (до старта и после финиша) возлагается на представителей команд, тренеров, самих участников. Участники соревнований до 20 лет включительно допускаются только при наличии допуска врача. </p>
-<p><a class="Attachment" href="http://ski-o.ru/index.pdf">Нумерация</a></p>
-<h3>Программа соревнований </h3>
-`
-+
-`<figure>
-   <table>
-      <tbody>
-         <tr>
-            <th></th>
-            <th></th>
-         </tr>
-         <tr>
-            <td>09:00</td>
-            <td>Начало работы секретариата </td>
-         </tr>
-         <tr>
-            <td>11:00</td>
-            <td>Начало старта Чемпионата и Первенства Москвы </td>
-         </tr>
-         <tr>
-            <td>11:30-13:30</td>
-            <td>Свободный старт открытых групп </td>
-         </tr>
-         <tr>
-            <td>14:00</td>
-            <td>Начало награждения <a href="/">2</a> на Медике (по мере формирования окончательных протоколов)</td>
-         </tr>
-      </tbody>
-   </table>
-   <figcaption>Таблица 1</figcaption>
-</figure>`
-+ `<p></p>
-<h3>Спортивно-техническая информация</h3>`
-+
-`<figure><span data-skio-html="true"><blockquote class="instagram-media" data-instgrm-captioned data-instgrm-version="7" style=" background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:658px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"><div style="padding:8px;"> <div style=" background:#F8F8F8; line-height:0; margin-top:40px; padding:62.4537037037037% 0; text-align:center; width:100%;"> <div style=" background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAsCAMAAAApWqozAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAMUExURczMzPf399fX1+bm5mzY9AMAAADiSURBVDjLvZXbEsMgCES5/P8/t9FuRVCRmU73JWlzosgSIIZURCjo/ad+EQJJB4Hv8BFt+IDpQoCx1wjOSBFhh2XssxEIYn3ulI/6MNReE07UIWJEv8UEOWDS88LY97kqyTliJKKtuYBbruAyVh5wOHiXmpi5we58Ek028czwyuQdLKPG1Bkb4NnM+VeAnfHqn1k4+GPT6uGQcvu2h2OVuIf/gWUFyy8OWEpdyZSa3aVCqpVoVvzZZ2VTnn2wU8qzVjDDetO90GSy9mVLqtgYSy231MxrY6I2gGqjrTY0L8fxCxfCBbhWrsYYAAAAAElFTkSuQmCC); display:block; height:44px; margin:0 auto -44px; position:relative; top:-22px; width:44px;"></div></div> <p style=" margin:8px 0 0 0; padding:0 4px;"> <a href="https://www.instagram.com/p/BSG34FpD5hQ/" style=" color:#000; font-family:Arial,sans-serif; font-size:14px; font-style:normal; font-weight:normal; line-height:17px; text-decoration:none; word-wrap:break-word;" target="_blank">After driving along the twists and turns of Switzerland’s Maloja Pass, Jonas Skorpil (@zrodyr) released his drone to take this nighttime shot. “I set it to a long exposure and tried my luck,” he says. #TheWeekOnInstagram Photo by @zrodyr</a></p> <p style=" color:#c9c8cd; font-family:Arial,sans-serif; font-size:14px; line-height:17px; margin-bottom:0; margin-top:8px; overflow:hidden; padding:8px 0 7px; text-align:center; text-overflow:ellipsis; white-space:nowrap;">Публикация от Instagram (@instagram) <time style=" font-family:Arial,sans-serif; font-size:14px; line-height:17px;" datetime="2017-03-26T16:05:02+00:00">Мар 26 2017 в 9:05 PDT</time></p></div></blockquote> <script async defer src="//platform.instagram.com/en_US/embeds.js"></script></span><figcaption>Twitter</figcaption></figure>`
-+
-`<p>Местность среднепересеченная, перепад на склоне до 50 м. Трассы подготовлены снегоходами с бороной. В районе соревнований есть стационарная лыжная трасса протяженностью 17 км. Процентное соотношение лыжней: Скоростная - 35% Быстрая - 65% Карта зимняя, масштаб в таблице, сечение рельефа 2,5м, не герметизирована. У групп М21 и М20 - переворот карты (не в месте старта), последний КП первого круга на карте второго круга обозначен знаком старта, нумерация сквозная. Остальные дистанции в один круг. Нумерация КП у всех групп двойная. Опасные места – лыжная трасса, крутые спуски на ней. Для удобства понимания направления движения по лыжной трассе будет использован специальный знак поверх знака лыжной трассы – красные стрелочки. Чтению карты он не мешает.</p>
-`;
+// `<figure><img src="image.jpg"><figcaption>Подпись</figcaption></figure>`
+// +
+// `<p>Район соревнований <strong>ЗАКРЫТ</strong> для тренировок с картами до 19 февраля!</p>
+// <h3>Участники <small>соревнований</small></h3>
+// <ul>
+//    <li>М12А (2005-2006г.г.), </li>
+//    <li>М14 (2003-2004г.г.), </li>
+//    <li>М17 (2000-2002г.г.), </li>
+//    <li>М20 (1997-1999г.г.), </li>
+//    <li>М21 (1996г. и старше – МС, КМС, 1р.) </li>
+//    <li>Ж12А (2005-2006г.г.), </li>
+//    <li>Ж14 (2003-2004г.г.), </li>
+//    <li>Ж17 (2000-2002г.г.), </li>
+//    <li>Ж20 (1997-1999г.г.), </li>
+//    <li>Ж21(1996г. и старше – МС, КМС, 1р.) </li>
+//    <li>М12Б и Ж12Б (2007г. и младше, начинающие 2005-2006г.), </li>
+//    <li>О1, О2 (открытые группы). </li>
+// </ul>
+// <p>Допускаются иногородние участники, которые не участвуют в розыгрыше медалей ЧиП г.Москвы.</p>
+// <p>Чемпионат г.Москвы проводится среди участников групп М21 и Ж21 согласно Положению о Чемпионате г.Москвы по спортивному ориентированию на лыжах 2017г. Участники групп МЖ12–20 участвуют в зачёте Первенства г.Москвы согласно Положению о Первенстве г.Москвы по спортивному ориентированию на лыжах 2017г. Ответственность за безопасность и сохранность жизни и здоровья участников в лесу (на дистанции) и во время соревнований (до старта и после финиша) возлагается на представителей команд, тренеров, самих участников. Участники соревнований до 20 лет включительно допускаются только при наличии допуска врача. </p>
+// <p><a class="Attachment" href="http://ski-o.ru/index.pdf">Нумерация</a></p>
+// <h3>Программа соревнований </h3>
+// `
+// +
+// `<figure>
+//    <table>
+//       <tbody>
+//          <tr>
+//             <th></th>
+//             <th></th>
+//          </tr>
+//          <tr>
+//             <td>09:00</td>
+//             <td>Начало работы секретариата </td>
+//          </tr>
+//          <tr>
+//             <td>11:00</td>
+//             <td>Начало старта Чемпионата и Первенства Москвы </td>
+//          </tr>
+//          <tr>
+//             <td>11:30-13:30</td>
+//             <td>Свободный старт открытых групп </td>
+//          </tr>
+//          <tr>
+//             <td>14:00</td>
+//             <td>Начало награждения <a href="/">2</a> на Медике (по мере формирования окончательных протоколов)</td>
+//          </tr>
+//       </tbody>
+//    </table>
+//    <figcaption>Таблица 1</figcaption>
+// </figure>`
+// + `<p></p>
+// <h3>Спортивно-техническая информация</h3>`
+// +
+// `<figure><span data-skio-html="true"><blockquote class="instagram-media" data-instgrm-captioned data-instgrm-version="7" style=" background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:658px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"><div style="padding:8px;"> <div style=" background:#F8F8F8; line-height:0; margin-top:40px; padding:62.4537037037037% 0; text-align:center; width:100%;"> <div style=" background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAsCAMAAAApWqozAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAMUExURczMzPf399fX1+bm5mzY9AMAAADiSURBVDjLvZXbEsMgCES5/P8/t9FuRVCRmU73JWlzosgSIIZURCjo/ad+EQJJB4Hv8BFt+IDpQoCx1wjOSBFhh2XssxEIYn3ulI/6MNReE07UIWJEv8UEOWDS88LY97kqyTliJKKtuYBbruAyVh5wOHiXmpi5we58Ek028czwyuQdLKPG1Bkb4NnM+VeAnfHqn1k4+GPT6uGQcvu2h2OVuIf/gWUFyy8OWEpdyZSa3aVCqpVoVvzZZ2VTnn2wU8qzVjDDetO90GSy9mVLqtgYSy231MxrY6I2gGqjrTY0L8fxCxfCBbhWrsYYAAAAAElFTkSuQmCC); display:block; height:44px; margin:0 auto -44px; position:relative; top:-22px; width:44px;"></div></div> <p style=" margin:8px 0 0 0; padding:0 4px;"> <a href="https://www.instagram.com/p/BSG34FpD5hQ/" style=" color:#000; font-family:Arial,sans-serif; font-size:14px; font-style:normal; font-weight:normal; line-height:17px; text-decoration:none; word-wrap:break-word;" target="_blank">After driving along the twists and turns of Switzerland’s Maloja Pass, Jonas Skorpil (@zrodyr) released his drone to take this nighttime shot. “I set it to a long exposure and tried my luck,” he says. #TheWeekOnInstagram Photo by @zrodyr</a></p> <p style=" color:#c9c8cd; font-family:Arial,sans-serif; font-size:14px; line-height:17px; margin-bottom:0; margin-top:8px; overflow:hidden; padding:8px 0 7px; text-align:center; text-overflow:ellipsis; white-space:nowrap;">Публикация от Instagram (@instagram) <time style=" font-family:Arial,sans-serif; font-size:14px; line-height:17px;" datetime="2017-03-26T16:05:02+00:00">Мар 26 2017 в 9:05 PDT</time></p></div></blockquote> <script async defer src="//platform.instagram.com/en_US/embeds.js"></script></span><figcaption>Twitter</figcaption></figure>`
+// +
+// `<p>Местность среднепересеченная, перепад на склоне до 50 м. Трассы подготовлены снегоходами с бороной. В районе соревнований есть стационарная лыжная трасса протяженностью 17 км. Процентное соотношение лыжней: Скоростная - 35% Быстрая - 65% Карта зимняя, масштаб в таблице, сечение рельефа 2,5м, не герметизирована. У групп М21 и М20 - переворот карты (не в месте старта), последний КП первого круга на карте второго круга обозначен знаком старта, нумерация сквозная. Остальные дистанции в один круг. Нумерация КП у всех групп двойная. Опасные места – лыжная трасса, крутые спуски на ней. Для удобства понимания направления движения по лыжной трассе будет использован специальный знак поверх знака лыжной трассы – красные стрелочки. Чтению карты он не мешает.</p>
+// ` +
+`<figure><div class="Embed"><iframe src="https://www.youtube.com/?v=dQw4w9WgXcQ" frameborder="0" allowfullscreen=""></iframe></div><figcaption>How do you do</figcaption></figure>`
+// +
+// `<figure><span data-skio-html="true"><blockquote class="instagram-media" data-instgrm-captioned data-instgrm-version="7" style=" background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:658px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"><div style="padding:8px;"> <div style=" background:#F8F8F8; line-height:0; margin-top:40px; padding:62.4537037037037% 0; text-align:center; width:100%;"> <div style=" background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAsCAMAAAApWqozAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAMUExURczMzPf399fX1+bm5mzY9AMAAADiSURBVDjLvZXbEsMgCES5/P8/t9FuRVCRmU73JWlzosgSIIZURCjo/ad+EQJJB4Hv8BFt+IDpQoCx1wjOSBFhh2XssxEIYn3ulI/6MNReE07UIWJEv8UEOWDS88LY97kqyTliJKKtuYBbruAyVh5wOHiXmpi5we58Ek028czwyuQdLKPG1Bkb4NnM+VeAnfHqn1k4+GPT6uGQcvu2h2OVuIf/gWUFyy8OWEpdyZSa3aVCqpVoVvzZZ2VTnn2wU8qzVjDDetO90GSy9mVLqtgYSy231MxrY6I2gGqjrTY0L8fxCxfCBbhWrsYYAAAAAElFTkSuQmCC); display:block; height:44px; margin:0 auto -44px; position:relative; top:-22px; width:44px;"></div></div> <p style=" margin:8px 0 0 0; padding:0 4px;"> <a href="https://www.instagram.com/p/BSG34FpD5hQ/" style=" color:#000; font-family:Arial,sans-serif; font-size:14px; font-style:normal; font-weight:normal; line-height:17px; text-decoration:none; word-wrap:break-word;" target="_blank">After driving along the twists and turns of Switzerland’s Maloja Pass, Jonas Skorpil (@zrodyr) released his drone to take this nighttime shot. “I set it to a long exposure and tried my luck,” he says. #TheWeekOnInstagram Photo by @zrodyr</a></p> <p style=" color:#c9c8cd; font-family:Arial,sans-serif; font-size:14px; line-height:17px; margin-bottom:0; margin-top:8px; overflow:hidden; padding:8px 0 7px; text-align:center; text-overflow:ellipsis; white-space:nowrap;">Публикация от Instagram (@instagram) <time style=" font-family:Arial,sans-serif; font-size:14px; line-height:17px;" datetime="2017-03-26T16:05:02+00:00">Мар 26 2017 в 9:05 PDT</time></p></div></blockquote> <script async defer src="//platform.instagram.com/en_US/embeds.js"></script></span><figcaption>Twitter</figcaption></figure>`
+// ;
 //
 // import { convertToHTML, convertFromHTML } from 'draft-convert';
 // import { convertToRaw, EditorState } from 'draft-js';

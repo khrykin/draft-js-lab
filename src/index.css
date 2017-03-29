@@ -85,6 +85,43 @@ table {
   border-color: #007bff transparent transparent transparent;
 }
 
+.Embed {
+	position: relative;
+	padding-bottom: 56.2%; /* 16:9 */
+	/*padding-top: 25px;*/
+	height: 0;
+  margin-bottom: .4em;
+}
+
+.Embed iframe {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+  z-index: -1
+}
+
+
 @keyframes blinker {
   50% { opacity: 0; }
+}
+
+.PlainTextEditor div[data-block="true"] {
+  margin: 0;
+}
+
+.PlainTextEditor .public-DraftEditor-content,
+.PlainTextEditor .DraftEditor-editorContainer,
+.PlainTextEditor .DraftEditor-root,
+.PlainTextEditor .public-DraftStyleDefault-ltr {
+  text-align: inherit;
+}
+
+.PlainTextEditor .public-DraftEditorPlaceholder-root {
+  width: 100%;
+}
+
+.CodeEditor {
+  word-break: break-all;
 }
