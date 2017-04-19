@@ -114,6 +114,7 @@ function toHTML(editorState) {
           <a
             data-skio-attachment
             data-skio-attachment-size={entity.data.size}
+            data-skio-attachment-filename={entity.data.filename}
             target="__blank"
             href={entity.data.href}>
             { originalText }
@@ -198,8 +199,8 @@ function fromHTML(html) {
             'ATTACHMENT',
             'MUTABLE',
             {
-              href: node.href,
-              filename: node.href.replace(/^.*[\\\/]/, ''),
+              href: node.getAttribute('href'),
+              filename: node.dataset.skioAttachmentFilename,
               size: node.dataset.skioAttachmentSize
             }
           )
