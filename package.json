@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "main": "lib/editor/Editor.js",
+  "proxy": "http://localhost:8080",
   "devDependencies": {
     "babel-cli": "^6.24.0",
     "babel-preset-env": "^1.2.2",

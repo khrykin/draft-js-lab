@@ -183,27 +183,34 @@ class MediaEditor extends Component {
     return (
       <div className="relative hide-child">
         <Toolbar>
-          <Button
-            onClick={this.toggleShowURL}>
-            URL
-          </Button>
-          { this.state.showURL && (
-            <input
-              type="text"
-              value={data.src}
-              onKeyPress={this.handleKeyPress}
-              onChange={this.onFieldChange('src')}
-              />
-          )}
-          { upload && (
+          { !data.uploaded && (
             <span>
-              <UploadButton
-                onChange={this.props.onUpload}>
-                Загрузить
-              </UploadButton>
+              <Button
+                onClick={this.toggleShowURL}>
+                URL
+              </Button>
+              { this.state.showURL && (
+                <input
+                  type="text"
+                  value={data.src}
+                  onKeyPress={this.handleKeyPress}
+                  onChange={this.onFieldChange('src')}
+                  />
+              )}
+              { upload && (
+                <UploadButton
+                  onChange={this.props.onUpload}>
+                  Загрузить
+                </UploadButton>
+              )}
             </span>
           )}
-
+          {data.uploaded && (
+            <Button
+              onClick={() => {}}>
+              Выбрать другое фото
+            </Button>
+          )}
         </Toolbar>
         { this.props.children }
       </div>

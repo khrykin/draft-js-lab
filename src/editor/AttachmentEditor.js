@@ -86,11 +86,11 @@ export default class AttachmentEditor extends Component {
 }
 
 
-function getFilenameFromURL(url) {
+function getFilenameFromURL(url = "") {
   return url.split('/').pop().split('#')[0].split('?')[0];
 }
 
-function getExtensionFromURL(url) {
+function getExtensionFromURL(url = "") {
   const ext = url.split('/').pop().split('#')[0].split('?')[0].split('.')[1]
   return ext &&  ext.toLowerCase();
 }
@@ -136,12 +136,12 @@ function FileIcon({ href }) {
 }
 
 
-function FileInfo({ href, size }) {
+function FileInfo({ href, size, filename }) {
   return (
     <div>
       <FileIcon href={href} />
       {' '}
-      { getFilenameFromURL(href) }
+      { filename }
       {' '}
       <small className="light-gray">{ size }</small>
     </div>

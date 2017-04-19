@@ -61,6 +61,8 @@ import {
   // Image,
 } from './EntitiesWrappers';
 
+import fetchWithProgress from './fetchWithProgress';
+
 const TOOLBAR_BOTTOM_MARGIN = 15;
 const TOOLBAR_SIDE_MARGIN = 15;
 
@@ -126,7 +128,8 @@ class RichEditor extends Component {
 
   static defaultProps = {
     attachments: [],
-    initalValue: ""
+    initalValue: "",
+    uploadURL: "/api/photos/upload"
   }
   //
   componentDidMount() {
@@ -698,7 +701,6 @@ class RichEditor extends Component {
 
   }
 
-
   uploadImageForKey = (entityKey, files) => {
     const { editorState } = this.state;
 
@@ -709,64 +711,78 @@ class RichEditor extends Component {
       return alert("Недопустимый формат файла");
     }
 
-    let percentage = 0;
-    let self = this;
-    let ts = setTimeout(function progress() {
+    const data = new FormData();
+    data.append('file', file);
+    data.append('courtesy', 'TEST');
 
-      self.replaceEntityData(entityKey, {
-        src: '',
-        filename: file.name,
-        size: file.size,
-        progress: percentage
-      });
-
-      if (percentage >= 100) {
-        this.waitingForUpload = false;
-        return self.replaceEntityData(entityKey, {
-          src: `http://ski-o.ru/docs/${file.name}`,
+    fetchWithProgress(this.props.uploadURL, {
+      headers: {
+        'Accept': 'application/json'
+      },
+      method: "POST",
+      body: data,
+      credentials: 'same-origin'
+    }, (e) => {
+      if (e.lengthComputable) {
+        const percentage = Math.round(e.loaded / e.total * 100);
+        this.replaceEntityData(entityKey, {
+          src: '',
           filename: file.name,
           size: file.size,
-          progress: 100
+          progress: percentage
         });
+        // console.log("add upload event-listener" + evt.loaded + "/" + evt.total);
       }
-
-      percentage += 10;
-      ts = setTimeout(progress, 500)
-    }, 500);
+    })
+    .then(res => {
+      console.log('PHOTO UPLOADED', res);
+      return this.replaceEntityData(entityKey, {
+        src: res.file.normal,
+        filename: file.name,
+        size: file.size,
+        uploaded: true,
+      });
+    }, err => console.log(err))
   }
 
   uploadAttachmentForKey = (entityKey, files) => {
     const { editorState } = this.state;
 
-    this.collapseSelection();
+    const file = files[0];
     this.waitingForUpload = true;
 
-    const file = files[0];
+    const data = new FormData();
+    data.append('file', file);
+    data.append('courtesy', 'TEST');
 
-    let percentage = 0;
-    let self = this;
-    let ts = setTimeout(function progress() {
-
-      self.replaceEntityData(entityKey, {
-        href: '',
-        filename: file.name,
-        size: file.size,
-        progress: percentage,
-      });
-
-      if (percentage >= 100) {
-        this.waitingForUpload = false;
-        return self.replaceEntityData(entityKey, {
-          href: `http://ski-o.ru/docs/${file.name}`,
+    fetchWithProgress('/api/documents/upload', {
+      headers: {
+        'Accept': 'application/json'
+      },
+      method: "POST",
+      body: data,
+      credentials: 'same-origin'
+    }, (e) => {
+      if (e.lengthComputable) {
+        const percentage = Math.round(e.loaded / e.total * 100);
+        this.replaceEntityData(entityKey, {
+          href: '',
           filename: file.name,
           size: file.size,
-          progress: 100
+          progress: percentage
         });
-    }
-
-      percentage += 10;
-      ts = setTimeout(progress, 500)
-    }, 500);
+        // console.log("add upload event-listener" + evt.loaded + "/" + evt.total);
+      }
+    })
+    .then(res => {
+      console.log('DOCUMENT UPLOADED', res);
+      return this.replaceEntityData(entityKey, {
+        href: res.file,
+        filename: file.name,
+        size: file.size,
+        uploaded: true,
+      });
+    }, err => console.log(err))
   }
 
   uploadAttachment = (files) => {
